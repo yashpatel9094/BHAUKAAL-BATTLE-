@@ -1,13 +1,33 @@
 // Shared helpers: DB (Upstash/Vercel KV Redis REST, ya local dev ke liye memory), auth token, JSON handler
 const crypto = require('crypto');
 
-const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const TOK = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+// Vercel integration kabhi prefix lagata hai (jaise STORAGE_KV_REST_API_URL), isliye naam ke ant se dhundho
+const findEnv = re => { const k = Object.keys(process.env).find(n => re.test(n) && process.env[n]); return k ? process.env[k] : undefined; };
+const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || findEnv(/(KV_REST_API_URL|UPSTASH_REDIS_REST_URL)$/);
+const TOK = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || findEnv(/(KV_REST_API_TOKEN|UPSTASH_REDIS_REST_TOKEN)$/);
 const SECRET = process.env.AUTH_SECRET || 'dev-secret-change-me';
 const LOG_KEEP = 150;
 
-/* ---------- Redis REST ---------- */
+// Normal redis:// (TCP) URL, jaise Vercel ke "Redis" integration ka REDIS_URL
+const REDIS_URL = [process.env.REDIS_URL, findEnv(/(^|_)REDIS_URL$/)].find(v => v && /^rediss?:\/\//.test(v));
+const USE_REST = !!(URL_ && TOK);
+
+/* ---------- Redis (REST ya TCP) ---------- */
+let _tcp = null;
+async function tcpClient() {
+  if (_tcp && _tcp.c.isOpen) return _tcp.c;
+  const { createClient } = require('redis');
+  const c = createClient({ url: REDIS_URL, socket: { connectTimeout: 6000 } });
+  c.on('error', e => console.error('redis:', e.message));
+  _tcp = { c };
+  await c.connect();
+  return c;
+}
 async function cmd(args) {
+  if (!USE_REST) {
+    const c = await tcpClient();
+    return c.sendCommand(args.map(String));
+  }
   const r = await fetch(URL_, { method: 'POST', headers: { Authorization: 'Bearer ' + TOK }, body: JSON.stringify(args) });
   const j = await r.json();
   if (j.error) throw new Error('DB: ' + j.error);
@@ -49,7 +69,7 @@ const memDb = {
   async pushLog(room, str) { const s = await this.incr('seq:' + room); const l = M.log.get(room) || []; l.push([s, str]); while (l.length > LOG_KEEP) l.shift(); M.log.set(room, l); return s; },
   async readLog(room, cursor) { return (M.log.get(room) || []).filter(e => e[0] > cursor); },
 };
-const db = URL_ && TOK ? redisDb : memDb;
+const db = USE_REST || REDIS_URL ? redisDb : memDb;
 
 /* ---------- tokens ---------- */
 const b64 = s => Buffer.from(s).toString('base64url');
