@@ -1,8 +1,8 @@
-﻿// Mini BGMI - static file server + WebSocket relay (room code + 30 sec join window)
+// Mini BGMI - static file server + WebSocket relay (room code + 30 sec join window)
 const http = require('http'), fs = require('fs'), path = require('path'), os = require('os');
 const { WebSocketServer } = require('ws');
 const PORT = process.env.PORT || 8000;
-const ROOT = __dirname;
+const ROOT = path.join(__dirname, 'public');
 const FILES = { '/': 'index.html', '/index.html': 'index.html', '/three.min.js': 'three.min.js' };
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript' };
 const MAXP = 16, JOIN_SECS = 30;
