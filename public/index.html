@@ -161,6 +161,7 @@ input{font-size:16px;padding:8px 12px;border-radius:6px;border:1px solid #fff4;b
   <h2 id="lobInfo"></h2>
   <div id="plist"></div>
   <div><button class="b3" onclick="leaveLobby()">⏻ LOBBY SE BAHAR</button></div>
+  <div style="margin-top:10px"><button id="copyBtn" class="b2" onclick="copyCode()">📋 CODE COPY KARO</button><button id="startMP" style="display:none" onclick="hostStart()">▶ MATCH SHURU KARO</button></div>
   <p id="lobWait" style="opacity:.8;margin-top:8px">Host ke match shuru karne ka wait...</p>
   <p style="opacity:.6;font-size:13px;margin-top:10px;max-width:520px">Sirf code daalke judne wale players khelenge, koi bot nahi. Room CODE dost ko batao.</p>
 </div>
@@ -1428,9 +1429,18 @@ async function roomAction(action){
 $('btnCreate').onclick=()=>roomAction('create');
 $('btnJoin').onclick=()=>{if(!$('code').value.trim()){menuErr('Room CODE daalo');return;}roomAction('join');};
 let lobPoll=0,lobOff=0,lobStarted=false;
+let lobFail=0;
 async function lobbyTick(){
-  try{lobbyUpdate(await api('room',{action:'status',code:net.code}));}
-  catch(e){clearInterval(lobPoll);alert(e.message);location.reload();}
+  try{lobbyUpdate(await api('room',{action:'status',code:net.code}));lobFail=0;}
+  catch(e){if(++lobFail>=5){clearInterval(lobPoll);alert(e.message);location.reload();}} // 1-2 galat jawab se lobby na tute
+}
+function copyCode(){
+  const t=net.code,done=()=>{$('copyBtn').textContent='✅ COPY HO GAYA: '+t;setTimeout(()=>{$('copyBtn').textContent='📋 CODE COPY KARO';},1800);};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,()=>fallbackCopy(t,done));else fallbackCopy(t,done);
+}
+function fallbackCopy(t,done){const i=document.createElement('input');i.value=t;document.body.appendChild(i);i.select();try{document.execCommand('copy');done();}catch(e){prompt('Code copy karo:',t);}i.remove();}
+async function hostStart(){
+  try{await api('room',{action:'start',rt:net.rt});$('startMP').disabled=true;}catch(e){alert(e.message);}
 }
 function lobbyUpdate(s){
   if(lobStarted)return;
@@ -1438,6 +1448,10 @@ function lobbyUpdate(s){
   $('plist').innerHTML=s.players.map(p=>`<div>${p.id===s.hostId?'👑 ':'🎮 '}<b>${esc(p.name)}</b>${p.id===net.id?' (tum)':''}</div>`).join('');
   $('lobInfo').innerHTML=`Room CODE: <b style="color:#ffb300;font-size:28px;letter-spacing:3px">${s.code}</b><br>Players: ${s.players.length} (min ${s.min}, max ${s.max}) — bots nahi honge`;
   const secs=s.startAt?Math.max(0,Math.ceil((s.startAt-s.now)/1000)):0;
+  const amHost=s.hostId===net.id;
+  $('startMP').style.display=amHost&&!s.started?'inline-block':'none';
+  $('startMP').textContent=s.players.length<2?'▶ MATCH SHURU KARO (kam se kam 2 players)':`▶ MATCH SHURU KARO (${s.players.length} players)`;
+  $('startMP').disabled=s.players.length<2||(s.startAt&&s.startAt-s.now<=3000);
   $('lobWait').style.display='block';
   $('lobWait').textContent=s.started?'Match shuru ho raha hai...':s.startAt?`⏱ Match ${secs} sec mein shuru hoga — jo bhi code daalega judta jayega`:`⏳ Kam se kam ${s.min} players chahiye (${s.players.length}/${s.min}) — dost ko code do`;
   if(s.started){

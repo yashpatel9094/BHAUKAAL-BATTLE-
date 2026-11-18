@@ -74,6 +74,8 @@ function wrap(fn) {
     if (req.method !== 'POST') return send(405, { error: 'POST only' });
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = {}; } }
+    // Vercel par memory DB chalega nahi (har request alag instance par ja sakti hai) -> room "gayab" ho jate hain
+    if (process.env.VERCEL && db.kind === 'memory') return send(500, { error: 'Database (Upstash Redis / KV) project se connect nahi hai. Vercel > Storage mein Redis banake Connect karo, phir Redeploy.' });
     try {
       const out = await fn(body || {});
       if (out && out.error) return send(out.code || 400, { error: out.error });

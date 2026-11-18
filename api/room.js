@@ -34,6 +34,19 @@ module.exports = wrap(async b => {
     return s ? { ok: true, ...s } : { error: 'Room nahi mila (khatam ho gaya ya code galat)', code: 404 };
   }
 
+  if (action === 'start') { // sirf host: match abhi shuru karo (3 sec ke countdown ke baad)
+    const t = verify(b.rt);
+    if (!t) return { error: 'Session khatam, dobara join karo', code: 401 };
+    const s = await getStatus(t.c);
+    if (!s) return { error: 'Room nahi mila', code: 404 };
+    if (t.id !== s.hostId) return { error: 'Sirf room banane wala (host) shuru kar sakta hai' };
+    if (s.started) return { ok: true };
+    if (s.players.length < 2) return { error: 'Shuru karne ke liye kam se kam 2 players chahiye' };
+    const cur = s.startAt && s.startAt - Date.now() < 3000 ? s.startAt : Date.now() + 3000;
+    await db.set('rs:' + t.c, String(cur), { ex: 7200 });
+    return { ok: true };
+  }
+
   if (action === 'leave') {
     const t = verify(b.rt);
     if (!t) return { ok: true };
