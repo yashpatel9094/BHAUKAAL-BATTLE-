@@ -1929,8 +1929,8 @@ function exitApp(){ // browser tab band karne ki koshish
 }
 // Multiplayer server ka address: hosted server (Render etc.) ka naam yahan daalo, jaise 'bhaukaal-battle.onrender.com'.
 // Khali ho to jis server se page khula hai (node server.js) wahi use hota hai; Vercel par khali = multiplayer band.
-const MP_SERVER='';
-$('addr').value=MP_SERVER||(/vercel\.app$/.test(location.hostname)?'':location.host);
+const MP_SERVER='bhaukaal-battle.onrender.com'; // sirf Vercel (online) par use hota hai; local par apna server
+$('addr').value=/vercel\.app$/.test(location.hostname)?MP_SERVER:location.host;
 // ---- test / debug hooks (sirf URL ?auto&test se) ----
 const QS=new URLSearchParams(location.search),TEST=QS.has('test');
 window.addEventListener('error',e=>{document.title='ERR: '+e.message+' @'+e.lineno+':'+e.colno;});
