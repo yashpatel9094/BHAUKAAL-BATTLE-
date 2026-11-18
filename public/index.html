@@ -2426,7 +2426,8 @@ function updateItems(dt,time){
     if(!player.alive||player.ph<3||Math.abs(it.baseY-player.pos.y)>2.4)continue;
     if(it.type==='ammo'&&d<1.6&&!player.bike){pickup(it);continue;}
     if(d<bi){bi=d;nearItem=it;}}
-  if(player.ph===3)for(const b of bikes){if(b.rider)continue;const d=Math.hypot(b.pos.x-player.pos.x,b.pos.z-player.pos.z);if(d<bb){bb=d;nearBike=b;}}
+  if(player.ph===3)for(const b of bikes){if(b.rider)continue;if(Math.abs(player.pos.y-b.pos.y)>1.6)continue; // chhat/terrace par ho aur bike neeche ho to bike nahi chunni (scope/zoom chalna chahiye)
+    const d=Math.hypot(b.pos.x-player.pos.x,b.pos.z-player.pos.z);if(d<bb){bb=d;nearBike=b;}}
 }
 function gameOver(win,rank){
   if(state==='over')return;
