@@ -981,13 +981,16 @@ function makeRemote(p){
 /* ============ zone ============ */
 const STAGES=[{r:300,wait:100,shrink:50,dps:1},{r:190,wait:45,shrink:40,dps:2},{r:105,wait:35,shrink:30,dps:3.5},{r:50,wait:30,shrink:25,dps:5},{r:18,wait:20,shrink:20,dps:8},{r:4,wait:15,shrink:15,dps:12}];
 const zone={cx:0,cz:0,r:580,phase:0,timer:STAGES[0].wait,shrinking:false,fx:0,fz:0,fr:580,tx:0,tz:0,tr:300};
+let zoneRng=Math.random; // match mein seed se bandhta hai: sab players ka safe zone ek jaisa
 function zoneTarget(){
   const s=STAGES[zone.phase];if(!s)return;
   zone.fx=zone.cx;zone.fz=zone.cz;zone.fr=zone.r;zone.tr=s.r;
-  const ang=Math.random()*6.28,off=Math.random()*Math.max(0,zone.r-s.r)*.85;
+  const ang=zoneRng()*6.28,off=zoneRng()*Math.max(0,zone.r-s.r)*.85;
   zone.tx=clamp(zone.cx+Math.cos(ang)*off,-LIM+60,LIM-60);zone.tz=clamp(zone.cz+Math.sin(ang)*off,-LIM+60,LIM-60);
 }
-const zoneWall=new THREE.Mesh(new THREE.CylinderGeometry(1,1,90,96,1,true),new THREE.MeshBasicMaterial({color:0x2d7bff,transparent:true,opacity:.28,side:THREE.DoubleSide,depthWrite:false}));
+const zoneWall=new THREE.Mesh(new THREE.CylinderGeometry(1,1,90,96,1,true),new THREE.MeshBasicMaterial({color:0x2d7bff,transparent:true,opacity:.4,side:THREE.DoubleSide,depthWrite:false,fog:false}));
+const zoneRing=new THREE.Mesh(new THREE.CylinderGeometry(1,1,2.2,96,1,true),new THREE.MeshBasicMaterial({color:0x9fd0ff,transparent:true,opacity:.85,side:THREE.DoubleSide,depthWrite:false,fog:false}));
+zoneRing.position.y=1.1;scene.add(zoneRing);
 zoneWall.position.y=40;scene.add(zoneWall);
 function updateZone(dt){
   const s=STAGES[zone.phase];
@@ -1001,7 +1004,7 @@ function updateZone(dt){
         if(zone.phase<STAGES.length-1){zone.phase++;zone.timer=STAGES[zone.phase].wait;zoneTarget();}else zone.phase=STAGES.length;}
     }
   }
-  zoneWall.scale.set(zone.r,1,zone.r);zoneWall.position.x=zone.cx;zoneWall.position.z=zone.cz;
+  zoneWall.scale.set(zone.r,1,zone.r);zoneWall.position.x=zone.cx;zoneWall.position.z=zone.cz;zoneRing.scale.set(zone.r,1,zone.r);zoneRing.position.x=zone.cx;zoneRing.position.z=zone.cz;
   const dps=STAGES[Math.min(zone.phase,STAGES.length-1)].dps;
   for(const a of actors){if(!a.alive||a.isRemote||a.isProxy||a.ph<3)continue;
     if(Math.hypot(a.pos.x-zone.cx,a.pos.z-zone.cz)>zone.r){a.zoneT=(a.zoneT||0)+dt;if(a.zoneT>=.5){a.zoneT=0;applyDamage(a,dps*.5,null,false,true);}}}
@@ -1156,7 +1159,8 @@ function applyDamage(a,amt,by,head,zoneDmg){
 function feed(txt,me){const d=document.createElement('div');d.textContent=txt;if(me)d.className='me';$('feed').appendChild(d);setTimeout(()=>d.remove(),6000);while($('feed').children.length>6)$('feed').firstChild.remove();}
 function killActor(a,by,zoneDmg,fromNet){
   if(!a.alive)return;
-  a.alive=false;a.hp=0;
+  a.alive=false;a.hp=0;a.deadBy=by?by.id:null;
+  if(!a.isPlayer)makeDeathCrate(a); // PUBG jaisa: body gayab, uski jagah peti + dhuan
   deathMarks.push({x:a.pos.x,z:a.pos.z,t:performance.now()/1000});
   feed(zoneDmg?`${a.name} zone mein mara gaya`:(by&&by!==a)?`${by.name}  ➜  ${a.name}`:`${a.name} khatam ho gaya`,by===player);
   if(by===player&&by!==a){player.kills++;showMsg('KILL! '+a.name);}
@@ -1181,9 +1185,33 @@ function killActor(a,by,zoneDmg,fromNet){
     gameOver(false,alive+1);return;
   }
   if(a.bikeRef){a.bikeRef.rider=null;a.bikeRef=null;}
-  a.ch.group.rotation.x=-Math.PI/2;a.ch.group.position.y=.25;
-  if(a.ch.group.children.some(c=>c.isSprite))a.ch.group.children.filter(c=>c.isSprite).forEach(c=>c.visible=false);
+  a.ch.group.visible=false;a.ch.hid=true;
   checkWin();
+}
+/* maare gaye player/bot ki peti + dhuan (PUBG death box) */
+const crates=[];let smokeTex=null;
+function makeDeathCrate(a){
+  if(!smokeTex){const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d'),gr=g.createRadialGradient(32,32,2,32,32,30);gr.addColorStop(0,'rgba(235,235,235,.9)');gr.addColorStop(1,'rgba(235,235,235,0)');g.fillStyle=gr;g.fillRect(0,0,64,64);smokeTex=new THREE.CanvasTexture(c);}
+  const y=floorAt(a.pos.x,a.pos.z,a.pos.y,.55);
+  const g=new THREE.Group();
+  g.add(bm(.95,.42,.62,0x39495a,0,.21,0),bm(1,.08,.67,0x566a80,0,.46,0),bm(.45,.05,.05,0xffb300,0,.51,.32),bm(.12,.3,.64,0x2a3644,.3,.21,0),bm(.12,.3,.64,0x2a3644,-.3,.21,0));
+  g.position.set(a.pos.x,y,a.pos.z);g.rotation.y=a.yaw||0;
+  g.traverse(o=>{if(o.isMesh)o.castShadow=true;});scene.add(g);
+  crates.push({g,age:0,puffT:0,puffs:[],x:a.pos.x,y,z:a.pos.z});
+}
+function updateCrates(dt){
+  for(let i=crates.length-1;i>=0;i--){
+    const c=crates[i];c.age+=dt;c.puffT-=dt;
+    if(c.age<240&&c.puffT<=0&&c.puffs.length<14){c.puffT=.35;
+      const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:smokeTex,transparent:true,depthWrite:false,opacity:.6,color:0xd8d8d8}));
+      sp.position.set(c.x+(Math.random()-.5)*.3,c.y+.6,c.z+(Math.random()-.5)*.3);sp.userData={t:0,dx:(Math.random()-.5)*.5,dz:(Math.random()-.5)*.5};
+      scene.add(sp);c.puffs.push(sp);}
+    for(let j=c.puffs.length-1;j>=0;j--){const p=c.puffs[j],u=p.userData;u.t+=dt;
+      p.position.x+=u.dx*dt;p.position.z+=u.dz*dt;p.position.y+=dt*1.6;
+      const s=.8+u.t*.9;p.scale.set(s,s,1);p.material.opacity=Math.max(0,.55*(1-u.t/5));
+      if(u.t>5){scene.remove(p);p.material.dispose();c.puffs.splice(j,1);}}
+    if(c.age>=240&&!c.puffs.length){scene.remove(c.g);crates.splice(i,1);}
+  }
 }
 function checkWin(){if(player.alive&&state==='play'&&actors.filter(x=>x.alive).length===1)gameOver(true,1);}
 function showMsg(t){const m=$('msg');m.textContent=t;m.style.opacity=1;clearTimeout(showMsg.t);showMsg.t=setTimeout(()=>m.style.opacity=0,2200);}
@@ -1306,6 +1334,8 @@ function updateProxy(b,dt){
 }
 function updateRemote(a,dt){
   if(!a.alive)return;
+  if(a.lastSeen&&state==='play'&&performance.now()-a.lastSeen>9000){ // 9 sec se koi khabar nahi = game chhod gaya
+    a.alive=false;feed(a.name+' game chhod gaya');a.ch.group.visible=false;a.ch.hid=true;if(a.bikeRef){a.bikeRef.rider=null;a.bikeRef=null;}checkWin();return;}
   const k=Math.min(1,dt*12),ox=a.pos.x,oz=a.pos.z;
   a.pos.x+=(a.tx-a.pos.x)*k;a.pos.y+=(a.ty-a.pos.y)*k;a.pos.z+=(a.tz-a.pos.z)*k;a.yaw+=wrapAng(a.tyaw-a.yaw)*k;
   a.height=[1.75,1.2,.55][a.stance|0]||1.75;
@@ -1398,7 +1428,7 @@ function onNet(m){
   switch(m.t){
     case 'hostgone':alert('Host game chhod gaya. Match khatam.');location.reload();break;
     case 'left':{const a=byId[m.id];if(a&&a.alive){a.alive=false;feed(a.name+' game chhod gaya');a.ch.group.visible=false;if(a.bikeRef){a.bikeRef.rider=null;a.bikeRef=null;}checkWin();}break;}
-    case 's':{const a=byId[m.from];if(!a||!a.alive)break;
+    case 's':{const a=byId[m.from];if(!a||!a.alive)break;a.lastSeen=performance.now();
       a.tx=m.x;a.ty=m.y;a.tz=m.z;a.tyaw=m.yaw;a.tpitch=m.pit;a.stance=m.cr|0;a.crouch=a.stance===1;a.ph=m.ph===undefined?3:m.ph;a.wkey=m.w;
       if(!a.init){a.init=true;a.pos.set(m.x,m.y,m.z);a.yaw=m.yaw;}
       if(m.bk>=0&&bikes[m.bk]){const b=bikes[m.bk];if(a.bikeRef&&a.bikeRef!==b)a.bikeRef.rider=null;a.bikeRef=b;b.rider=a;a.byaw=m.by;}
@@ -1420,7 +1450,8 @@ function onNet(m){
 function netTick(dt){
   if(!net.on)return;
   net.sT-=dt;
-  if(net.sT<=0){net.sT=.066;
+  if(!player.alive){net.dT=(net.dT||0)-dt;if(net.dT<=0){net.dT=1;send({t:'dead',id:player.id,by:player.deadBy==null?null:player.deadBy,zone:false});}} // 'dead' dobara bhejo: kisi ne miss na kiya ho
+  else if(net.sT<=0){net.sT=.066;
     send({t:'s',x:r2(player.pos.x),y:r2(player.pos.y),z:r2(player.pos.z),yaw:r2(player.yaw),pit:r2(player.pitch),cr:player.stance,ph:player.ph,w:player.wkey,bk:player.bike?player.bike.idx:-1,by:player.bike?r2(player.bike.yaw):0});}
   if(net.isHost){
     net.bT-=dt;if(net.bT<=0){net.bT=.08;send({t:'B',b:bots.map(b=>[r2(b.pos.x),r2(b.pos.z),r2(b.yaw),r2(b.pos.y),b.ph])});}
@@ -1827,11 +1858,12 @@ function drawMinimap(){
   const X=x=>c+(x-px)*k,Y=z=>c+(z-pz)*k;
   for(const r of roads){mm.strokeStyle=r.w>5?'#44444a':'#8f7f5c';mm.lineWidth=Math.max(1.5,r.w*k);mm.beginPath();mm.moveTo(X(r.ax),Y(r.az));mm.lineTo(X(r.bx),Y(r.bz));mm.stroke();}
   for(const b of buildings){if(Math.abs(b.cx-px)>R+20||Math.abs(b.cz-pz)>R+20)continue;mm.fillStyle=b.F>=5?'#8f95a0':b.F>=3?'#bdb8a8':'#e0d9c2';mm.fillRect(X(b.cx-b.w/2),Y(b.cz-b.d/2),b.w*k,b.d*k);}
-  if(Math.hypot(px-zone.cx,pz-zone.cz)+R*1.5<zone.r){/* poora minimap zone ke andar hai - kuch shade nahi */}
+  if(Math.hypot(px-zone.cx,pz-zone.cz)+R*1.5<zone.r){/* poora minimap zone ke andar hai - shade nahi */ if(zone.r<R*4){mm.strokeStyle='#6cf';mm.lineWidth=2;mm.beginPath();mm.arc(X(zone.cx),Y(zone.cz),Math.min(zone.r*k,3000),0,6.283);mm.stroke();} }
   else{
     mm.fillStyle='rgba(30,90,255,.38)';mm.beginPath();mm.rect(0,0,S,S);mm.arc(X(zone.cx),Y(zone.cz),Math.min(zone.r*k,3000),0,6.283,true);mm.fill('evenodd');
     mm.strokeStyle='#fff';mm.lineWidth=1.5;mm.beginPath();mm.arc(X(zone.cx),Y(zone.cz),Math.min(zone.r*k,3000),0,6.283);mm.stroke();
   }
+  if(zone.phase<STAGES.length){mm.strokeStyle='#fff';mm.lineWidth=1.6;mm.setLineDash([5,4]);mm.beginPath();mm.arc(X(zone.tx),Y(zone.tz),Math.min(zone.tr*k,3000),0,6.283);mm.stroke();mm.setLineDash([]);}
   const now=performance.now()/1000;
   const edge=(wx,wz,m)=>{const dx=wx-px,dz=wz-pz,d=Math.hypot(dx,dz)||1;return d*k<c-m?[c+dx*k,c+dz*k,false]:[c+dx/d*(c-m),c+dz/d*(c-m),true];};
   for(const b of bikes)if(!b.rider&&Math.abs(b.pos.x-px)<R&&Math.abs(b.pos.z-pz)<R)mapIcon(mm,X(b.pos.x),Y(b.pos.z),'🏍','#7a52c7',6.5);
@@ -1867,7 +1899,7 @@ function updateHUD(){
   const z=$('zone'),out=outsideZone(player);
   if(zone.phase>=STAGES.length)z.textContent='Final zone';
   else z.textContent=zone.shrinking?`⚠ Zone chhota ho raha hai ${Math.ceil(zone.timer)}s`:`Zone ${Math.ceil(zone.timer)}s mein chhota hoga`;
-  if(out){z.textContent='⚠ ZONE KE BAHAR! Andar bhaago — HP ghat rahi hai';z.className='warn';}else z.className='';
+  if(out){const d=Math.round(Math.hypot(player.pos.x-zone.cx,player.pos.z-zone.cz)-zone.r);z.textContent='⚠ ZONE KE BAHAR! '+d+' m andar bhaago — HP ghat rahi hai';z.className='warn';}else{z.className='';if(zone.phase<STAGES.length){const dd=Math.round(Math.hypot(player.pos.x-zone.tx,player.pos.z-zone.tz)-zone.tr);z.textContent+=dd>0?('  •  safe zone '+dd+' m door'):'  •  safe zone mein ho ✓';}}
   // jagah ka naam
   let nm='Khuli zameen',bd=1e9;for(const v of villages){const d=Math.hypot(v.x-player.pos.x,v.z-player.pos.z);if(d<(v.r||10)+25&&d<bd){bd=d;nm=v.name;}}
   const fl=Math.round(player.pos.y/3.3);
@@ -1926,13 +1958,13 @@ function loop(now){
       for(const a of actors){
         if(a.isPlayer)continue;
         if(a.isRemote)updateRemote(a,dt);else if(a.isProxy)updateProxy(a,dt);else if(a.isBot)updateBot(a,dt,gameTime);}
-      updateItems(dt,gameTime);updateNades(dt);updateFx(dt);updateIndicators(dt);
+      updateItems(dt,gameTime);updateNades(dt);updateFx(dt);updateIndicators(dt);updateCrates(dt);
       dmgFlash=Math.max(0,dmgFlash-dt*.8);
       netTick(dt);
     }
     updateHUD();if(mapOpen)drawBigMap();
   }else if(state==='over'){
-    updateFx(dt);
+    updateFx(dt);updateCrates(dt);
     for(const a of actors){if(a.isPlayer)continue;if(a.isRemote)updateRemote(a,dt);else if(a.isProxy)updateProxy(a,dt);else if(a.isBot)updateBot(a,dt,gameTime);}
     if(!player.alive){camera.position.y=Math.max(.3,camera.position.y-dt*2);camera.rotation.z=Math.min(1.2,camera.rotation.z+dt);}
     netTick(dt);
@@ -1966,7 +1998,7 @@ function startMatch(seed,plist){
   }
   // 4) bots (ye bhi jahaz se kudenge)
   for(let k=0;k<nBots;k++)makeBot(k);
-  rand=Math.random;
+  rand=Math.random;zoneRng=mulberry32(seed^0x2f6e2b1);
   const freeSlots={length:nBots};
   zoneTarget();
   camera.position.set(player.pos.x,plane.y+8,player.pos.z);
@@ -2011,6 +2043,12 @@ if(QS.has('auto')){
       }
       if(QS.has('map'))toggleMap();
     },300);
+    if(QS.has('killtest')){ // 3 bot maaro -> alive kam, peti bani, body gayab
+      const before=actors.filter(a=>a.alive).length;
+      for(let k=0;k<3;k++){const b=bots[k];b.pos.set(10+k*3,0,10);b.ch.group.visible=true;killActor(b,player,false,false);}
+      updateCrates(1);updateCrates(1);
+      document.title=`KILL before=${before} after=${actors.filter(a=>a.alive).length} crates=${crates.length} puffs=${crates[0].puffs.length} bodyVisible=${bots[0].ch.group.visible}`;
+    }
     if(QS.has('landtest')){ // jahaz -> freefall -> parachute -> landing ka synchronous test
       state='test';const target={x:100,z:-150};let t=0,it=0,jumpedAt=null,landT=null,chuteAt=null;
       plane.t=plane.tIn+1;
@@ -2065,7 +2103,7 @@ if(QS.has('auto')){
       }else document.title='CLIMB: no building';
     }
     if(QS.has('bike')){const b=bikes[bikes.length-1];player.bike=b;b.rider=player;}
-    if(!QS.has('climb')&&!QS.has('climbx')&&!QS.has('landtest'))document.title='READY b='+buildings.length+' c='+colliders.length+' i='+items.length+' bk='+bikes.length+' F='+[1,2,3,4,5,6].map(f=>buildings.filter(b=>b.F===f).length).join('/')+' sp='+Math.round(player.pos.x)+','+Math.round(player.pos.z)+' v='+villages.map(v=>v.name+':'+Math.round(v.x)+','+Math.round(v.z)).join(';');
+    if(!QS.has('climb')&&!QS.has('climbx')&&!QS.has('landtest')&&!QS.has('killtest'))document.title='READY b='+buildings.length+' c='+colliders.length+' i='+items.length+' bk='+bikes.length+' F='+[1,2,3,4,5,6].map(f=>buildings.filter(b=>b.F===f).length).join('/')+' sp='+Math.round(player.pos.x)+','+Math.round(player.pos.z)+' v='+villages.map(v=>v.name+':'+Math.round(v.x)+','+Math.round(v.z)).join(';');
   },600);
 }
 requestAnimationFrame(loop);
