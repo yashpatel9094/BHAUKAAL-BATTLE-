@@ -137,7 +137,7 @@ input{font-size:16px;padding:8px 12px;border-radius:6px;border:1px solid #fff4;b
   </table>
   <div><input id="name" maxlength="14" placeholder="Apna naam" value="Player"></div>
   <div><button id="solo">AKELE KHELO (Bots)</button></div>
-  <div><input id="addr" placeholder="server:port"><input id="code" maxlength="12" placeholder="Room CODE" style="width:130px;text-transform:uppercase"><button id="multi" class="b2">MULTIPLAYER</button></div>
+  <div><input id="addr" type="hidden"><input id="code" maxlength="12" placeholder="Room CODE" style="width:130px;text-transform:uppercase"><button id="multi" class="b2">MULTIPLAYER</button></div>
   <p style="opacity:.7;font-size:13px">Dost same CODE daalein. Pehle code daalne ke 30 sec baad match khud shuru hoga, jinhone code dala wo sab judenge.</p>
   <div><button class="b3" onclick="exitApp()">⏻ EXIT</button></div>
   <p id="menuErr" style="color:#ff7a7a;margin-top:6px;font-size:14px"></p>
@@ -1915,7 +1915,7 @@ function startMatch(seed,plist){
 function initAudio(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();}
 $('solo').onclick=()=>{initAudio();net.on=false;net.isHost=true;net.id=0;player.name=$('name').value.trim()||'Tum';
   beginMatch(Math.floor(Math.random()*1e9),[{id:0,name:player.name,slot:0}]);};
-$('multi').onclick=()=>{initAudio();const a=$('addr').value.trim();if(!$('code').value.trim()){$('menuErr').textContent='Room CODE daalo (dost bhi wahi code daalenge)';return;}if(!a){$('menuErr').textContent='Server address daalo (jaise 192.168.1.5:8000)';return;}connect(a);};
+$('multi').onclick=()=>{initAudio();const a=$('addr').value.trim();if(!$('code').value.trim()){$('menuErr').textContent='Room CODE daalo (dost bhi wahi code daalenge)';return;}if(!a){$('menuErr').textContent='Multiplayer server abhi set nahi hai. Akele (Bots) khelo.';return;}connect(a);};
 $('startMP').onclick=()=>send({t:'start'});
 function quitGame(){ // match se bahar -> main menu
   if(!confirm('Game se bahar nikalna hai? Ye match khatam ho jayega.'))return;
@@ -1927,7 +1927,10 @@ function exitApp(){ // browser tab band karne ki koshish
   window.close();
   setTimeout(()=>{$('menuErr').style.color='#ffd27a';$('menuErr').textContent='Browser ne band nahi karne diya — tab ko Ctrl+W se band kar do.';},300);
 }
-$('addr').value=/vercel\.app$|^$/.test(location.hostname)?'':location.host; // Vercel pe WebSocket server nahi hota: solo chalega, multiplayer ke liye apne server ka address daalo
+// Multiplayer server ka address: hosted server (Render etc.) ka naam yahan daalo, jaise 'bhaukaal-battle.onrender.com'.
+// Khali ho to jis server se page khula hai (node server.js) wahi use hota hai; Vercel par khali = multiplayer band.
+const MP_SERVER='';
+$('addr').value=MP_SERVER||(/vercel\.app$/.test(location.hostname)?'':location.host);
 // ---- test / debug hooks (sirf URL ?auto&test se) ----
 const QS=new URLSearchParams(location.search),TEST=QS.has('test');
 window.addEventListener('error',e=>{document.title='ERR: '+e.message+' @'+e.lineno+':'+e.colno;});
