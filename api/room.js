@@ -11,10 +11,10 @@ async function getStatus(code) {
   const meta = JSON.parse(raw);
   const players = Object.values(await db.hgetall('rp:' + code)).map(s => JSON.parse(s)).sort((a, b) => a.id - b.id);
   const st = await db.get('rs:' + code), startAt = st ? Number(st) : 0, now = Date.now();
-  const host = players.find(p => p.name === meta.host) || players[0] || null;
+  const host = players.find(p => p.name === meta.host) || players[0] || null, map = meta.map === 'registan' ? 'registan' : 'gaon';
   const seed = parseInt(crypto.createHash('md5').update(code + ':' + startAt).digest('hex').slice(0, 7), 16);
   return {
-    code, players, hostId: host ? host.id : 0, min: MIN, max: MAX, now, startAt,
+    code, map, players, hostId: host ? host.id : 0, min: MIN, max: MAX, now, startAt,
     started: !!startAt && now >= startAt, secs: startAt ? Math.max(0, Math.ceil((startAt - now) / 1000)) : 0, seed,
   };
 }
@@ -62,7 +62,7 @@ module.exports = wrap(async b => {
       if (n === 0) await db.del('room:' + t.c);
       else {
         if (n < MIN) await db.del('rs:' + t.c); // 4 se kam -> countdown ruk gaya
-        if (t.id === s.hostId) { const left = s.players.filter(p => p.id !== t.id)[0]; if (left) await db.set('room:' + t.c, JSON.stringify({ host: left.name }), { ex: 7200 }); }
+        if (t.id === s.hostId) { const left = s.players.filter(p => p.id !== t.id)[0]; if (left) await db.set('room:' + t.c, JSON.stringify({ host: left.name, map: s.map }), { ex: 7200 }); }
       }
     }
     return { ok: true };
@@ -74,7 +74,7 @@ module.exports = wrap(async b => {
 
   if (action === 'create') {
     let code = '';
-    for (let i = 0; i < 8; i++) { code = newCode(); if (await db.set('room:' + code, JSON.stringify({ host: u.u }), { nx: true, ex: 7200 })) break; code = ''; }
+    for (let i = 0; i < 8; i++) { code = newCode(); if (await db.set('room:' + code, JSON.stringify({ host: u.u, map: b.map === 'registan' ? 'registan' : 'gaon' }), { nx: true, ex: 7200 })) break; code = ''; }
     if (!code) return { error: 'Room nahi ban paya, dobara try karo' };
     const id = await db.incr('rid:' + code);
     await db.hset('rp:' + code, u.u, JSON.stringify({ id, name: u.u }));

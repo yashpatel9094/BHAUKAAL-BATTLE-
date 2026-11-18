@@ -3,7 +3,7 @@ const http = require('http'), fs = require('fs'), path = require('path'), os = r
 const PORT = process.env.PORT || 8000;
 const ROOT = path.join(__dirname, 'public');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript' };
-const API = { '/api/auth': require('./api/auth'), '/api/room': require('./api/room'), '/api/relay': require('./api/relay') };
+const API = { '/api/auth': require('./api/auth'), '/api/room': require('./api/room'), '/api/relay': require('./api/relay'), '/api/rank': require('./api/rank') };
 
 http.createServer((req, res) => {
   const url = req.url.split('?')[0];

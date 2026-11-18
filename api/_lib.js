@@ -45,6 +45,8 @@ const redisDb = {
   hdel: (k, f) => cmd(['HDEL', k, f]),
   async hlen(k) { return Number(await cmd(['HLEN', k])) || 0; },
   async incr(k) { const n = Number(await cmd(['INCR', k])); await cmd(['EXPIRE', k, '7200']); return n; },
+  zadd: (k, score, member) => cmd(['ZADD', k, String(score), member]),
+  async zrevrange(k, a, b) { const r = (await cmd(['ZREVRANGE', k, String(a), String(b), 'WITHSCORES'])) || [], o = []; for (let i = 0; i < r.length; i += 2) o.push([r[i], Number(r[i + 1])]); return o; },
   pushLog: (room, str) => cmd(['EVAL', PUSH_LUA, '2', 'log:' + room, 'seq:' + room, str]),
   async readLog(room, cursor) {
     const a = (await cmd(['LRANGE', 'log:' + room, String(-LOG_KEEP), '-1'])) || [], out = [];
@@ -54,7 +56,7 @@ const redisDb = {
 };
 
 /* ---------- Memory (local test) ---------- */
-const M = global.__bbmem || (global.__bbmem = { kv: new Map(), h: new Map(), log: new Map(), seq: new Map() });
+const M = global.__bbmem || (global.__bbmem = { kv: new Map(), h: new Map(), log: new Map(), seq: new Map(), z: new Map() });
 const memDb = {
   kind: 'memory',
   async get(k) { return M.kv.has(k) ? M.kv.get(k) : null; },
@@ -66,6 +68,8 @@ const memDb = {
   async hdel(k, f) { const h = M.h.get(k); if (h) h.delete(f); },
   async hlen(k) { return (M.h.get(k) || new Map()).size; },
   async incr(k) { const n = (M.seq.get(k) || 0) + 1; M.seq.set(k, n); return n; },
+  async zadd(k, score, member) { const m = M.z.get(k) || (M.z.set(k, new Map()), M.z.get(k)); m.set(member, Number(score)); },
+  async zrevrange(k, a, b) { return [...(M.z.get(k) || new Map())].sort((x, y) => y[1] - x[1]).slice(a, b + 1); },
   async pushLog(room, str) { const s = await this.incr('seq:' + room); const l = M.log.get(room) || []; l.push([s, str]); while (l.length > LOG_KEEP) l.shift(); M.log.set(room, l); return s; },
   async readLog(room, cursor) { return (M.log.get(room) || []).filter(e => e[0] > cursor); },
 };

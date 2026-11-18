@@ -19,6 +19,8 @@ canvas#game{position:fixed;inset:0;display:block}
 #mm{position:absolute;left:14px;top:14px;width:170px;height:170px;border-radius:50%;border:3px solid rgba(255,255,255,.7);box-shadow:0 0 12px #000a}
 #loc{position:absolute;left:14px;top:190px;font-size:13px;background:rgba(0,0,0,.5);padding:3px 10px;border-radius:4px}
 #wpt{position:absolute;left:14px;top:216px;font-size:13px;background:rgba(0,150,200,.6);padding:3px 10px;border-radius:4px;display:none}
+#windbox{position:absolute;left:14px;top:244px;background:rgba(0,0,0,.5);padding:4px 12px 4px 8px;border-radius:6px;font-size:14px;display:flex;align-items:center;gap:8px;backdrop-filter:blur(4px)}
+#windArrow{display:inline-flex;transition:transform .3s}#windbox.storm{background:rgba(160,90,20,.75);animation:bl 1s infinite}
 #top{position:absolute;right:16px;top:14px;display:flex;gap:10px;font-weight:700;font-size:18px}
 #top span{background:rgba(0,0,0,.55);padding:6px 12px;border-radius:6px}
 #zone{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:rgba(0,0,0,.55);padding:6px 16px;border-radius:6px;font-weight:600;font-size:15px;white-space:nowrap}
@@ -59,6 +61,18 @@ canvas#game{position:fixed;inset:0;display:block}
 .hs.em{opacity:.45}
 #air{position:absolute;left:50%;bottom:30%;transform:translateX(-50%);background:rgba(0,20,40,.7);padding:10px 22px;border-radius:8px;font-size:17px;display:none;border:1px solid #6cf;text-align:center;line-height:1.55;white-space:nowrap}
 #air b{color:#ffd24a}
+#mapPick{display:flex;gap:10px;justify-content:center;margin:0 0 6px}
+button.mp{background:#0d1a2e;border:2px solid #2a4a7a;color:#cfe3ff;box-shadow:none;font-size:17px;padding:8px 18px;display:flex;flex-direction:column;align-items:center;line-height:1.1;min-width:190px;margin:0}
+button.mp small{font-size:12px;font-weight:600;opacity:.75;margin-top:2px}
+button.mp.on{border-color:#ffb300;background:linear-gradient(#3a2a08,#1c1404);color:#ffd27a;box-shadow:0 0 14px #ffb30055}
+#lbScreen table{margin:10px auto;min-width:520px}#lbScreen td,#lbScreen th{padding:6px 14px;border-bottom:1px solid #fff2;text-align:left}#lbScreen th{color:#ffb300}
+#lbScreen tr.me td{background:#ffb30022}
+.confetti{position:fixed;top:-20px;width:10px;height:16px;z-index:60;pointer-events:none;animation:cf linear forwards}
+@keyframes cf{to{transform:translateY(110vh) rotate(720deg)}}
+#end .hin{font-family:'Teko','Rajdhani',sans-serif;font-size:60px;line-height:1.05;color:#ffcf40;text-shadow:0 3px 0 #7a4b00,0 0 30px #ff9d0088;margin:6px 0}
+#end .hin.lose{color:#ff8a7a;text-shadow:0 3px 0 #5a1a12;font-size:46px}
+#end .sub{font-size:22px;opacity:.9;margin:4px 0 8px;max-width:760px}
+#rankGain{font-size:24px;color:#9dffb0;margin:6px 0;min-height:30px}
 #legend{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center;max-width:820px;margin-top:8px;font-size:13px}
 #legend span{display:inline-flex;align-items:center;gap:5px}
 #legend i{display:inline-flex;width:20px;height:20px;border-radius:50%;border:1.5px solid #fff;align-items:center;justify-content:center;font-style:normal;font-size:12px}
@@ -106,6 +120,7 @@ input{font-family:inherit;font-weight:600;font-size:17px;padding:8px 12px;border
   <div id="wpn"></div>
   <div id="hotbar"></div>
   <div id="healbar"><i></i></div>
+  <div id="windbox" style="display:none"><span id="windArrow"><i data-ic="arrow-up" data-s="22"></i></span><span id="windTxt"></span></div>
   <div id="dmg"></div><div id="scope"></div><div id="msg"></div>
   <div id="hint">ESC = pause / exit &nbsp;|&nbsp; 1-5 / scroll = gun badlo &nbsp;|&nbsp; G = bomb &nbsp;|&nbsp; H = medkit &nbsp;|&nbsp; X = scope &nbsp;|&nbsp; B = baitho &nbsp;|&nbsp; Z = let jao &nbsp;|&nbsp; M = map &nbsp;|&nbsp; V = camera &nbsp;|&nbsp; E / ENTER = uthao / bike</div>
 </div>
@@ -143,7 +158,11 @@ input{font-family:inherit;font-weight:600;font-size:17px;padding:8px 12px;border
     <tr><td>Seedhi</td><td>Ghar ke bahar seedhi se chhat pe chadho, wahan se scope khol ke maro</td></tr>
   </table>
   <div><input id="name" maxlength="14" placeholder="Apna naam" value="Player"></div>
-  <div><button id="solo">AKELE KHELO (Bots)</button></div>
+  <div id="mapPick">
+    <button class="mp on" data-map="gaon"><i data-ic="sprout" data-s="18"></i> GAON<small>hara-bhara gaon</small></button>
+    <button class="mp" data-map="registan"><i data-ic="sun" data-s="18"></i> REGISTAN<small>Rajasthan • tez hawa • toofan</small></button>
+  </div>
+  <div><button id="solo">AKELE KHELO (Bots)</button><button id="btnLB" class="b2"><i data-ic="trophy" data-s="18"></i> LEADERBOARD</button></div>
   <div id="mpBox" style="margin-top:10px;padding:10px 14px;border:1px solid #2a4a7a;border-radius:10px;background:#0d1a2e">
     <div style="font-weight:700;color:#7ab8ff;margin-bottom:6px"><i data-ic="globe" data-s="16"></i> MULTIPLAYER</div>
     <div id="mpLogin">
@@ -152,6 +171,7 @@ input{font-family:inherit;font-weight:600;font-size:17px;padding:8px 12px;border
       <button id="btnLogin" class="b2">LOGIN</button><button id="btnSignup" class="b3" style="background:#2e7d32">SIGN UP</button>
     </div>
     <div id="mpRoom" style="display:none">
+      <div id="myRank" style="margin-bottom:4px;color:#ffd27a;font-size:16px"></div>
       <div style="margin-bottom:6px"><i data-ic="user" data-s="16"></i> <b id="whoami"></b> <a href="#" id="btnLogout" style="color:#ff9a9a;font-size:13px;margin-left:8px">logout</a></div>
       <button id="btnCreate" class="b2">ROOM BANAO</button>
       <input id="code" maxlength="8" placeholder="Room CODE" style="width:120px;text-transform:uppercase">
@@ -173,7 +193,8 @@ input{font-family:inherit;font-weight:600;font-size:17px;padding:8px 12px;border
   <p style="opacity:.6;font-size:13px;margin-top:10px;max-width:520px">Sirf code daalke judne wale players khelenge, koi bot nahi. Room CODE dost ko batao.</p>
 </div>
 <div id="pause" class="screen"><h1 style="font-size:40px" id="pauseT">PAUSE</h1><h2 id="pauseS">Wapas aane ke liye click karo</h2><button id="resume">JAARI RAKHO</button><button class="b3" onclick="quitGame()"><i data-ic="power" data-s="16"></i> BAHAR NIKLO (Exit)</button></div>
-<div id="end" class="screen"><h1 id="endT"></h1><h2 id="endK" style="color:#ffcf6a"></h2><h2 id="endS"></h2><div><button id="specBtn" class="b2" style="display:none" onclick="startSpectate()">👁 DEKHO (Spectate) — aage ka game</button><button onclick="netLeave();location.reload()">DOBARA KHELO / MENU</button></div></div>
+<div id="lbScreen" class="screen"><h1 style="font-size:46px"><i data-ic="trophy" data-s="40"></i> LEADERBOARD</h1><h2 id="lbMe"></h2><div id="lbBody" style="min-height:120px"></div><div><button class="b3" onclick="document.getElementById('lbScreen').style.display='none'">BAND KARO</button></div><p style="opacity:.6;font-size:13px;margin-top:6px">Points: jeet +60 • har kill +12 • behtar placement = zyada points. Sirf online room ke match ginte jaate hain.</p></div>
+<div id="end" class="screen"><h1 id="endT"></h1><h2 id="endK" style="color:#ffcf6a"></h2><div id="endMsg"></div><div id="rankGain"></div><h2 id="endS"></h2><div><button id="specBtn" class="b2" style="display:none" onclick="startSpectate()">👁 DEKHO (Spectate) — aage ka game</button><button onclick="netLeave();location.reload()">DOBARA KHELO / MENU</button></div></div>
 <div id="spec" style="display:none;position:fixed;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.65);color:#fff;padding:10px 16px;border-radius:12px;z-index:40;font:600 17px 'Segoe UI',sans-serif;text-align:center">
   👁 Dekh rahe ho: <b id="specName" style="color:#ffb300"></b> <span id="specInfo" style="opacity:.8;font-size:14px"></span><br>
   <button onclick="specStep(-1)" style="padding:6px 14px;margin:6px 4px 0">◀ Pichla</button><button onclick="specStep(1)" style="padding:6px 14px;margin:6px 4px 0">Agla ▶</button><button onclick="stopSpectate()" style="padding:6px 14px;margin:6px 4px 0;background:#c33;color:#fff">MENU</button>
@@ -247,6 +268,13 @@ document.body.prepend(renderer.domElement);
 renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;
 const scene=new THREE.Scene();
+/* ---- map themes: Gaon (hara) / Registan (Rajasthan) ---- */
+const THEMES={
+  gaon:{id:'gaon',name:'Gaon (Hara-bhara)',horizon:0xcde2f2,top:0x2b68c0,hemi:[0xdfeeff,0x7a8a60,.7],sun:0xfff0d8,sunI:1.5,fog:[90,430],mini:'#3d6a35',big:'#4a7a3c',expo:.85},
+  registan:{id:'registan',name:'Registan (Rajasthan)',horizon:0xf6e6c2,top:0x4f93d2,hemi:[0xfff2d4,0xd2aa6a,.9],sun:0xffe4b0,sunI:2.0,fog:[80,360],mini:'#d9b878',big:'#d4b172',expo:1.05}
+};
+let MAP=THEMES.gaon,DESERT=false;
+const fogBase={n:90,f:430};
 const HORIZON=0xcde2f2;
 scene.background=lin(HORIZON);
 scene.fog=new THREE.Fog(lin(HORIZON),90,430);
@@ -279,7 +307,25 @@ const cloudGroup=new THREE.Group();
   }
   scene.add(cloudGroup);
 }
-scene.add(new THREE.HemisphereLight(0xdfeeff,0x7a8a60,.7));
+const hemiL=new THREE.HemisphereLight(0xdfeeff,0x7a8a60,.7);scene.add(hemiL);
+function applyTheme(id){ // aasman, roshni, dhundh map ke hisaab se
+  MAP=THEMES[id]||THEMES.gaon;DESERT=MAP.id==='registan';
+  scene.background=lin(MAP.horizon);scene.fog.color.copy(lin(MAP.horizon));fogBase.n=MAP.fog[0];fogBase.f=MAP.fog[1];scene.fog.near=fogBase.n;scene.fog.far=fogBase.f;
+  const pos=skyDome.geometry.attributes.position,col=skyDome.geometry.attributes.color,top=lin(MAP.top),hor=lin(MAP.horizon),c=new THREE.Color();
+  for(let i=0;i<pos.count;i++){const y=pos.getY(i)/820,t=Math.pow(Math.max(0,y),DESERT?.42:.5);c.copy(hor).lerp(top,t);col.setXYZ(i,c.r,c.g,c.b);}
+  col.needsUpdate=true;
+  hemiL.color.copy(lin(MAP.hemi[0]));hemiL.groundColor.copy(lin(MAP.hemi[1]));hemiL.intensity=MAP.hemi[2];
+  sun.color.copy(lin(MAP.sun));sun.intensity=MAP.sunI;renderer.toneMappingExposure=MAP.expo;
+  cloudGroup.children.forEach((m,i)=>{m.visible=DESERT?i%5===0:true;});
+  PLASTER.length=0;BRICKC.length=0;CONC.length=0;ROOFC.length=0;
+  if(DESERT){
+    PLASTER.push(0xe6c488,0xd9a860,0xefd29a,0xe0b070,0xcf9a58,0xf0dcae,0xd8b078);BRICKC.push(0xd9a070,0xcf8c5a,0xe0b080);CONC.push(0xd6c09a,0xcdb48a,0xbfa87c);ROOFC.push(0xb07040,0xa0623a,0xc08a52,0x8a5a38);
+    TOWN_NAMES.length=0;TOWN_NAMES.push('Jaisalmer','Pushkar','Bikaner','Jodhpur','Barmer','Pokhran','Osian','Kuldhara','Khuri','Sam','Nagaur','Mandawa');
+  }else{
+    PLASTER.push(0xe9dfc7,0xe8d9a0,0xe3b8a8,0xaecbe0,0xb9d9c0,0xf2f2ee,0xd9a95b,0xcf8a66,0xc9b8d8);BRICKC.push(0xffffff,0xe6c0a8,0xd8b090);CONC.push(0xb0b4b8,0xc2bba8,0x9aa6b2,0xa8a8a0);ROOFC.push(0xb5503a,0x7a4a32,0x4a5560,0x3f6b4a,0x9a4a38,0xa8683a);
+    TOWN_NAMES.length=0;TOWN_NAMES.push('Rampur','Shivpur','Nayagaon','Hariyali','Sundarpur','Kishangarh','Devgaon','Mohanpur','Chandpur','Lakhanpur','Bhimgarh','Ratanpur');
+  }
+}
 const sun=new THREE.DirectionalLight(0xfff0d8,1.5);
 sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
 const sc=sun.shadow.camera;sc.left=-70;sc.right=70;sc.top=70;sc.bottom=-70;sc.near=1;sc.far=240;sun.shadow.bias=-.0006;
@@ -663,11 +709,110 @@ function layoutTown(kind,nx,nz,cell,density,name){
   return false;
 }
 
+/* ============ Registan (Rajasthan) ke hisse ============ */
+function sandTex(){
+  const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');
+  g.fillStyle='#d8b878';g.fillRect(0,0,256,256);
+  for(let i=0;i<9000;i++){const l=58+Math.random()*22;g.fillStyle=`hsl(${35+Math.random()*10},${42+Math.random()*20}%,${l}%)`;g.fillRect(Math.random()*256,Math.random()*256,1+Math.random()*2,1+Math.random()*2);}
+  for(let i=0;i<46;i++){const y=Math.random()*256;g.strokeStyle=`rgba(150,110,60,${.05+Math.random()*.08})`;g.lineWidth=1+Math.random()*2;g.beginPath();g.moveTo(0,y);
+    for(let x=0;x<=256;x+=32)g.lineTo(x,y+Math.sin(x*.05+i)*4+Math.random()*2);g.stroke();} // hawa se bani lahrein
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(260,260);t.anisotropy=8;t.encoding=THREE.sRGBEncoding;return t;
+}
+function buildDesertRim(){
+  const sand=[0xe3c07e,0xd9b46e,0xeccb8c],red=[0xb5653a,0xa4562f,0xc2744a];
+  for(let i=0;i<46;i++){const a=i/46*Math.PI*2+rnd(-.05,.05),r=LIM*1.2+rnd(-10,26),h=rnd(26,58),w=rnd(24,44);
+    const m=new THREE.Mesh(new THREE.CylinderGeometry(w*.62,w,h,8),mat(pick(red)));m.position.set(Math.cos(a)*r,h/2-2,Math.sin(a)*r);m.rotation.y=rand()*6;scene.add(m); // sapaat chotti wali mesa
+    const cap=new THREE.Mesh(new THREE.CylinderGeometry(w*.66,w*.64,h*.12,8),mat(0xd08a52));cap.position.set(m.position.x,h-2+h*.04,m.position.z);cap.rotation.y=m.rotation.y;scene.add(cap);}
+  for(let i=0;i<38;i++){const a=rand()*Math.PI*2,r=LIM*rnd(1.3,1.8),sx=rnd(60,120),sy=rnd(10,24),sz=rnd(40,80);
+    const d=new THREE.Mesh(new THREE.SphereGeometry(1,16,9),mat(pick(sand)));d.scale.set(sx,sy,sz);d.position.set(Math.cos(a)*r,-sy*.28,Math.sin(a)*r);d.rotation.y=rand()*6;scene.add(d);} // reti ke teele
+}
+function buildFort(){ // Kila: moti deewarein, kone ke burj, andar chat tak jaati seedhi
+  for(let t=0;t<200;t++){
+    const x=rnd(-LIM+90,LIM-90),z=rnd(-LIM+90,LIM-90);
+    if(Math.abs(x)<60||Math.abs(z)<60||!rectFree(x,z,68,68,8)||towns.some(q=>x>q.x0-45&&x<q.x1+45&&z>q.z0-45&&z<q.z1+45))continue;
+    const S=60,hS=S/2,th=2.6,H=8,col=0xd4a060;
+    towns.push({x0:x-hS-8,x1:x+hS+8,z0:z-hS-8,z1:z+hS+8});
+    batchBegin();
+    const gap=9; // 4 dishaon mein darwaza
+    for(const s of[-1,1]){
+      const half=(S-gap)/2;
+      for(const e of[-1,1]){
+        addBox(x+e*(gap/2+half/2),z+s*hS,half,th,0,H,col,true,true,'plaster');
+        addBox(x+s*hS,z+e*(gap/2+half/2),th,half,0,H,col,true,true,'plaster');
+      }
+      addBox(x,z+s*hS,gap+1,th,5.4,H,col,true,true,'plaster'); // darwaze ke upar mehraab
+      addBox(x+s*hS,z,th,gap+1,5.4,H,col,true,true,'plaster');
+    }
+    for(const sx of[-1,1])for(const sz of[-1,1]){ // 4 burj
+      addBox(x+sx*hS,z+sz*hS,7,7,0,13,0xc99350,true,true,'plaster');
+      addBox(x+sx*hS,z+sz*hS,8,8,13,13.8,0xb27a40,true,true,'plaster');
+    }
+    // kangure (battlements) deewar ke upar
+    for(const s of[-1,1])for(let k=-hS+5;k<hS-4;k+=3.4){
+      if(Math.abs(k)<gap/2+1)continue;
+      addBox(x+k,z+s*hS,1.4,th,H,H+1.1,col,false,true,'plaster');addBox(x+s*hS,z+k,th,1.4,H,H+1.1,col,false,true,'plaster');
+    }
+    // andar ki seedhi: uttar deewar ke saath (chat par jaane ke liye)
+    const nSt=18,run=.7,rise=H/nSt;
+    for(let s=0;s<nSt;s++)addBox(x-hS+4+s*run,z-hS+2.65,run,2.6,0,(s+1)*rise,0xc08a50,true,true,'concrete');
+    batchFlush();
+    makeBuilding(x+rnd(-4,4),z+rnd(-4,4),16,14,{F:3,flat:true,wallKind:'plaster',wallColor:0xe2b878,roofColor:0xb07040,loot:7});
+    for(let i=0;i<8;i++)spawnRandomLoot(x+rnd(-24,24),z+rnd(-24,24),false);
+    villages.push({x,z,name:'Kila (Qila)',r:hS+4});
+    return;
+  }
+}
+function buildOases(){ // paani ka talaab + khajoor ke ped
+  for(let o=0,tries=0;o<3&&tries<200;tries++){
+    const x=rnd(-LIM+60,LIM-60),z=rnd(-LIM+60,LIM-60);
+    if(Math.abs(x)<30||Math.abs(z)<30||!rectFree(x,z,36,36,6)||nearRoad(x,z,22))continue;
+    if(towns.some(q=>x>q.x0-20&&x<q.x1+20&&z>q.z0-20&&z<q.z1+20))continue;
+    const pool=new THREE.Mesh(new THREE.CircleGeometry(13,28),new THREE.MeshLambertMaterial({color:lin(0x3aa4c8),transparent:true,opacity:.85}));pool.rotation.x=-Math.PI/2;pool.position.set(x,.04,z);pool.receiveShadow=true;scene.add(pool);
+    const ring=new THREE.Mesh(new THREE.RingGeometry(13,17,28),new THREE.MeshLambertMaterial({color:lin(0x8aa84a)}));ring.rotation.x=-Math.PI/2;ring.position.set(x,.035,z);scene.add(ring);
+    for(let k=0;k<9;k++){const a=k/9*6.283+rnd(-.2,.2),r=rnd(14,19),px=x+Math.cos(a)*r,pz=z+Math.sin(a)*r,h=rnd(5.5,8);
+      const tr=new THREE.Mesh(new THREE.CylinderGeometry(.18,.28,h,6),mat(0x8a6a44));tr.position.set(px,h/2,pz);tr.rotation.z=rnd(-.12,.12);tr.castShadow=true;scene.add(tr);
+      for(let l=0;l<7;l++){const la=l/7*6.283,leaf=new THREE.Mesh(new THREE.ConeGeometry(.55,3.6,4),mat(0x3f8a3a));leaf.position.set(px+Math.cos(la)*1.5,h-.2,pz+Math.sin(la)*1.5);leaf.rotation.set(Math.sin(la)*1.25,0,-Math.cos(la)*1.25);leaf.castShadow=true;scene.add(leaf);}
+      addCollider({x0:px-.35,x1:px+.35,z0:pz-.35,z1:pz+.35,y0:0,y1:6,tree:true});}
+    villages.push({x,z,name:'Oasis',small:true,r:17});o++;
+  }
+}
+function buildDesertFlora(dm){ // kaante-daar kaktus (collider ke saath) + sukhi jhaadiyan
+  const N=360,trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.28,.34,3.6,8),mat(0x4f7a42),N),armL=new THREE.InstancedMesh(new THREE.CylinderGeometry(.16,.18,1.5,7),mat(0x57854a),N),armR=new THREE.InstancedMesh(new THREE.CylinderGeometry(.16,.18,1.3,7),mat(0x57854a),N),top=new THREE.InstancedMesh(new THREE.SphereGeometry(.3,8,6),mat(0x4f7a42),N);
+  let cnt=0;
+  for(let i=0;i<N*2&&cnt<N;i++){const p=freePoint(2,true);if(!p)continue;const s=rnd(.8,1.7);
+    dm.rotation.set(0,0,0);dm.scale.setScalar(s);dm.position.set(p.x,1.8*s,p.z);dm.updateMatrix();trunk.setMatrixAt(cnt,dm.matrix);
+    dm.position.set(p.x,3.6*s,p.z);dm.scale.set(s,s*1.1,s);dm.updateMatrix();top.setMatrixAt(cnt,dm.matrix);
+    dm.scale.setScalar(s);dm.position.set(p.x-.55*s,2.3*s,p.z);dm.updateMatrix();armL.setMatrixAt(cnt,dm.matrix);
+    dm.position.set(p.x+.55*s,2.7*s,p.z);dm.updateMatrix();armR.setMatrixAt(cnt,dm.matrix);
+    addCollider({x0:p.x-.4*s,x1:p.x+.4*s,z0:p.z-.4*s,z1:p.z+.4*s,y0:0,y1:4,tree:true});cnt++;}
+  for(const m of[trunk,armL,armR,top]){m.count=cnt;m.castShadow=true;m.frustumCulled=false;m.instanceMatrix.needsUpdate=true;scene.add(m);}
+  // khejri/babool jaise sukhe ped
+  const M=240,tk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.12,.22,2.2,6),mat(0x6a4c2e),M),cr=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.5,0),mat(0xb3a65c),M);cnt=0;
+  for(let i=0;i<M*2&&cnt<M;i++){const p=freePoint(2,true);if(!p)continue;const s=rnd(.8,1.5);
+    dm.rotation.set(0,rand()*6,0);dm.scale.setScalar(s);dm.position.set(p.x,1.1*s,p.z);dm.updateMatrix();tk.setMatrixAt(cnt,dm.matrix);
+    dm.scale.set(s*1.3,s*.7,s*1.3);dm.position.set(p.x,2.7*s,p.z);dm.updateMatrix();cr.setMatrixAt(cnt,dm.matrix);
+    addCollider({x0:p.x-.3*s,x1:p.x+.3*s,z0:p.z-.3*s,z1:p.z+.3*s,y0:0,y1:5,tree:true});cnt++;}
+  for(const m of[tk,cr]){m.count=cnt;m.castShadow=true;m.frustumCulled=false;m.instanceMatrix.needsUpdate=true;scene.add(m);}
+}
+function buildCamels(){ // sirf sajawat: khade hue oont
+  const body=0xc7a068,dark=0xa98350;
+  for(let i=0;i<16;i++){const p=freePoint(3,true);if(!p)continue;
+    const g=new THREE.Group(),L=(c,w,h,d,x,y,z)=>{const m=bm(w,h,d,c,x,y,z);m.castShadow=true;g.add(m);return m;};
+    L(body,.7,.8,1.9,0,1.6,0);
+    const h1=new THREE.Mesh(sphG(.34,8,6),mat(dark));h1.position.set(0,2.15,.3);h1.scale.set(1,1.1,1.1);h1.castShadow=true;g.add(h1);
+    const nk=L(body,.28,1.3,.3,0,2.3,-1.0);nk.rotation.x=.45;
+    L(body,.34,.36,.7,0,3.0,-1.45);L(dark,.34,.1,.34,0,2.86,-1.7);
+    for(const sx of[-1,1])for(const sz of[-1,1])L(dark,.16,1.3,.18,sx*.26,.65,sz*.7);
+    L(dark,.1,.7,.1,0,1.5,.98);
+    g.position.set(p.x,0,p.z);g.rotation.y=rand()*6;scene.add(g);
+    addCollider({x0:p.x-.8,x1:p.x+.8,z0:p.z-.8,z1:p.z+.8,y0:0,y1:2.6});}
+}
 function buildWorld(){
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(2800,2800),new THREE.MeshLambertMaterial({map:grassTex()}));
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(2800,2800),new THREE.MeshLambertMaterial({map:DESERT?sandTex():grassTex()}));
   ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
   addRoad(-LIM,0,LIM,0,7,1);addRoad(0,-LIM,0,LIM,7,1);
-  // pahaad
+  // pahaad (Registan mein: laal chattaane + reti ke tile)
+  if(DESERT){if(!QS.has('norim'))buildDesertRim();}else
   for(let i=0;i<64;i++){const a=i/64*Math.PI*2,r=LIM*1.22+rnd(-8,14),h=rnd(30,62);
     const m=new THREE.Mesh(new THREE.ConeGeometry(rnd(26,38),h,7),mat(i%3?0x56606b:0x66707a));m.position.set(Math.cos(a)*r,h/2-2,Math.sin(a)*r);m.rotation.y=rand()*6;scene.add(m);
     const sn=new THREE.Mesh(new THREE.ConeGeometry(m.geometry.parameters.radius*.35,h*.28,7),mat(0xf2f6fa));sn.position.set(m.position.x,h-h*.14-2,m.position.z);scene.add(sn);}
@@ -683,6 +828,7 @@ function buildWorld(){
     if(towns.some(q=>x>q.x0-10&&x<q.x1+10&&z>q.z0-10&&z<q.z1+10))continue;
     makeBuilding(x,z,w,d,{F});n++;
   }
+  if(DESERT&&!QS.has('nofort')){buildFort();buildOases();}
   // godown (warehouse)
   for(let tries=0,n=0;tries<400&&n<4;tries++){
     const x=rnd(-LIM+40,LIM-40),z=rnd(-LIM+40,LIM-40);
@@ -698,11 +844,12 @@ function buildWorld(){
   batchFlush();
   // patthar
   for(let i=0;i<90;i++){const p=freePoint(2.5,true);if(!p)continue;const s=rnd(1.2,3);
-    const m=new THREE.Mesh(new THREE.DodecahedronGeometry(s*.6,0),mat(0x7d8087));m.position.set(p.x,s*.35,p.z);m.rotation.set(rand(),rand(),rand());m.scale.y=.75;m.castShadow=m.receiveShadow=true;m.updateMatrix();m.matrixAutoUpdate=false;scene.add(m);
+    const m=new THREE.Mesh(new THREE.DodecahedronGeometry(s*.6,0),mat(DESERT?pick([0xb98a5a,0xa8794c,0xc79a68]):0x7d8087));m.position.set(p.x,s*.35,p.z);m.rotation.set(rand(),rand(),rand());m.scale.y=.75;m.castShadow=m.receiveShadow=true;m.updateMatrix();m.matrixAutoUpdate=false;scene.add(m);
     addCollider({x0:p.x-s*.5,x1:p.x+s*.5,z0:p.z-s*.5,z1:p.z+s*.5,y0:0,y1:s});}
   // ped: cheed (pine) + aam/neem jaise gol ped
   const dm=new THREE.Object3D();
-  {
+  if(DESERT){if(!QS.has('noflora')){buildDesertFlora(dm);buildCamels();}}
+  else{
     const N=800,trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.18,.28,2.4,6),mat(0x5a3d25),N);
     const cones=[0,1,2].map(i=>new THREE.InstancedMesh(new THREE.ConeGeometry(1.6,3.4,7),mat(i===1?0x3b7d3c:0x2f6b34),N));
     let cnt=0;
@@ -725,15 +872,15 @@ function buildWorld(){
   }
   // jhaadiyan, ghaas ke gucche, mitti ke dhabbe, lamp-post (sirf dikhne ke liye)
   {
-    const N=500,bush=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.8,1),mat(0x3f7a35),N);let cnt=0;
+    const N=DESERT?170:500,bush=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.8,1),mat(DESERT?0x8d8a4c:0x3f7a35),N);let cnt=0;
     for(let i=0;i<N*3&&cnt<N;i++){const x=rnd(-LIM,LIM),z=rnd(-LIM,LIM);if(inBuilding(x,z,2)||nearRoad(x,z,2.5))continue;
       const s=rnd(.5,1.2);dm.rotation.set(0,rand()*6,0);dm.scale.set(s,s*.75,s);dm.position.set(x,.4*s,z);dm.updateMatrix();bush.setMatrixAt(cnt++,dm.matrix);}
     bush.count=cnt;bush.castShadow=true;bush.frustumCulled=false;bush.instanceMatrix.needsUpdate=true;scene.add(bush);
-    const G=7000,tuft=new THREE.InstancedMesh(new THREE.ConeGeometry(.09,.55,4),mat(0x6aa04a),G);cnt=0;
+    const G=7000,tuft=new THREE.InstancedMesh(DESERT?new THREE.ConeGeometry(.05,.3,4):new THREE.ConeGeometry(.09,.55,4),mat(DESERT?0xb7a45e:0x6aa04a),G);cnt=0;
     for(let i=0;i<G*2&&cnt<G;i++){const x=rnd(-LIM,LIM),z=rnd(-LIM,LIM);if(inBuilding(x,z,.5)||nearRoad(x,z,1))continue;
       const s=rnd(.6,1.6);dm.rotation.set(rnd(-.2,.2),rand()*6,rnd(-.2,.2));dm.scale.set(s,s,s);dm.position.set(x,.25*s,z);dm.updateMatrix();tuft.setMatrixAt(cnt++,dm.matrix);}
     tuft.count=cnt;tuft.frustumCulled=false;tuft.instanceMatrix.needsUpdate=true;scene.add(tuft);
-    for(let i=0;i<40;i++){const r=rnd(5,14),m=new THREE.Mesh(new THREE.CircleGeometry(r,16),new THREE.MeshLambertMaterial({color:lin(pick([0x7a6a48,0x8a7a58,0x6a7a40,0x9a8a60])),transparent:true,opacity:.55,depthWrite:false}));
+    for(let i=0;i<40;i++){const r=rnd(5,14),m=new THREE.Mesh(new THREE.CircleGeometry(r,16),new THREE.MeshLambertMaterial({color:lin(pick(DESERT?[0xc9a468,0xb89458,0xd8b878,0xa88450]:[0x7a6a48,0x8a7a58,0x6a7a40,0x9a8a60])),transparent:true,opacity:.55,depthWrite:false}));
       m.rotation.x=-Math.PI/2;m.position.set(rnd(-LIM,LIM),.02,rnd(-LIM,LIM));m.receiveShadow=true;scene.add(m);}
     const lp=[];for(let z=-LIM+30;z<LIM;z+=60){lp.push([6,z],[-6,z],[z,6],[z,-6]);}
     const poles=new THREE.InstancedMesh(new THREE.CylinderGeometry(.07,.09,5.2,6),mat(0x4a4a50),lp.length),heads=new THREE.InstancedMesh(boxGeo,mat(0xfff2b0),lp.length);
@@ -1158,7 +1305,7 @@ function openChute(){
   p.ph=2;showMsg('🪂 Parachute khul gaya — A/D/W/S se jidhar chaho utro');tone(300,.25,.12);
 }
 function landPlayer(fl){
-  const p=player;p.ph=3;p.vy=0;p.pos.y=fl;p.viewY=fl;p.ground=true;p.stance=0;scene.fog.near=90;scene.fog.far=430;
+  const p=player;p.ph=3;p.vy=0;p.pos.y=fl;p.viewY=fl;p.ground=true;p.stance=0;scene.fog.near=fogBase.n;scene.fog.far=fogBase.f;
   showMsg('Utar gaye! Gun dhundo 🔫  (M = map)');tone(220,.12,.12);
 }
 const _ap=new V3();
@@ -1171,7 +1318,8 @@ function updateAirPlayer(dt){
     let fs,vyT,sd;
     if(p.ph===1){fs=W?30:S?8:16;vyT=W?-62:S?-38:-48;sd=8;}else{fs=W?17:S?5:10;vyT=-7.5;sd=5;}
     const st=(D?1:0)-(A?1:0),k=Math.min(1,dt*(p.ph===1?2.2:1.6));
-    p.hvx+=(fx*fs+rx*st*sd-p.hvx)*k;p.hvz+=(fz*fs+rz*st*sd-p.hvz)*k;
+    const wX=wind.on?wind.dx*wind.speed*.09:0,wZ=wind.on?wind.dz*wind.speed*.09:0; // hawa udaan ko bhi bahati hai
+    p.hvx+=(fx*fs+rx*st*sd+wX-p.hvx)*k;p.hvz+=(fz*fs+rz*st*sd+wZ-p.hvz)*k;
     p.vy+=(vyT-p.vy)*Math.min(1,dt*(p.ph===1?2.2:4));
     p.pos.x+=p.hvx*dt;p.pos.z+=p.hvz*dt;p.pos.y+=p.vy*dt;
     collideCircle(p.pos,.45);
@@ -1189,7 +1337,7 @@ function updateAirPlayer(dt){
   p.wkey=null;
   if(p.ph>0)syncChar({ch:p.ch,pos:p.pos,yaw:p.yaw,bikeRef:null,stance:0,wkey:null,ph:p.ph},0,0);else{p.ch.group.visible=false;p.ch.hid=true;}
   const tf=p.ph===1?92:p.ph===2?82:72;camera.fov+=(tf-camera.fov)*Math.min(1,dt*6);camera.updateProjectionMatrix();
-  scene.fog.near=90+Math.max(0,p.pos.y)*1.6;scene.fog.far=430+Math.max(0,p.pos.y)*2.6; // unchai se door tak dikhe
+  scene.fog.near=fogBase.n+Math.max(0,p.pos.y)*1.6;scene.fog.far=fogBase.f+Math.max(0,p.pos.y)*2.6; // unchai se door tak dikhe
   $('scope').style.display='none';vm.visible=false;$('cross').className='ads';
   sun.position.set(p.pos.x+45,p.pos.y+70,p.pos.z+30);sun.target.position.copy(p.pos);
 }
@@ -1200,6 +1348,7 @@ function shoot(shooter,o,dir,wpn,spread,dmgMul,tracerStart,wkey){
   const pellets=wpn.pellets||1;let lastEnd=null;
   for(let p=0;p<pellets;p++){
     _d.set(dir.x+rnd(-1,1)*spread,dir.y+rnd(-1,1)*spread,dir.z+rnd(-1,1)*spread).normalize();
+    if(wind.on){_d.x+=wind.dx*wind.speed*.0006;_d.z+=wind.dz*wind.speed*.0006;_d.normalize();} // hawa goli ko dhakelti hai
     let best=wpn.range,hitA=null,head=false,zm=1; // zm: jagah ke hisab se damage (sir 1.6x, dhad 1x, taang .6x)
     best=Math.min(best,rayWorld(o,_d,best));
     for(const a of actors){
@@ -1483,9 +1632,46 @@ function netLeave(){
 addEventListener('pagehide',netLeave);
 /* ---- login + room ---- */
 let acct=null;try{acct=JSON.parse(localStorage.getItem('bb_acct')||'null');}catch(e){}
+/* ============ ranking + leaderboard ============ */
+const TIERS=[[0,'रंगरूट','user'],[100,'सिपाही','shield'],[300,'हवलदार','medal'],[600,'सूबेदार','medal'],[1000,'कप्तान','award'],[1600,'मेजर','award'],[2500,'सेनापति','trophy'],[4000,'भौकाली बादशाह','crown']];
+function tierOf(pts){let t=TIERS[0];for(const x of TIERS)if(pts>=x[0])t=x;const i=TIERS.indexOf(t),nx=TIERS[i+1];return{name:t[1],icon:t[2],next:nx?nx[0]-pts:0,nextName:nx?nx[1]:''};}
+async function refreshMyRank(){
+  if(!acct)return;
+  try{const r=await api('rank',{action:'me',token:acct.token}),s=r.stats,t=tierOf(s.pts);
+    $('myRank').innerHTML=svgIcon(t.icon,18)+' <b>'+t.name+'</b> • '+s.pts+' अंक • '+s.wins+' जीत • '+s.matches+' मैच';}catch(e){}
+}
+async function openLeaderboard(){
+  $('lbScreen').style.display='flex';$('lbBody').innerHTML='लोड हो रहा है...';$('lbMe').textContent='';
+  try{
+    const r=await api('rank',{action:'top'}),me=acct?acct.username.toLowerCase():'';
+    if(!r.list.length){$('lbBody').innerHTML='<p style="opacity:.8;margin:20px">अभी कोई रैंक नहीं बनी — ऑनलाइन रूम में खेलकर पहले बनो!</p>';return;}
+    $('lbBody').innerHTML='<table><tr><th>#</th><th>खिलाड़ी</th><th>रैंक</th><th>अंक</th><th>जीत</th><th>किल</th></tr>'+r.list.map((p,i)=>{const t=tierOf(p.pts),ic=i===0?'<span style="color:#ffcf40">'+svgIcon('trophy',18)+'</span>':i+1;
+      return '<tr'+(p.name.toLowerCase()===me?' class="me"':'')+'><td>'+ic+'</td><td><b>'+escH(p.name)+'</b></td><td>'+svgIcon(t.icon,16)+' '+t.name+'</td><td>'+p.pts+'</td><td>'+p.wins+'</td><td>'+p.kills+'</td></tr>';}).join('')+'</table>';
+  }catch(e){$('lbBody').innerHTML='<p style="color:#ff9a9a;margin:20px">'+escH(e.message)+'</p>';}
+}
+$('btnLB').onclick=openLeaderboard;
+async function reportRank(rank){
+  const el=$('rankGain');
+  if(!net.on||!net.rt){el.innerHTML='<span style="font-size:17px;opacity:.8">रैंकिंग सिर्फ़ ऑनलाइन रूम के मैच में बनती है — दोस्तों के साथ खेलो!</span>';return;}
+  el.textContent='अंक जुड़ रहे हैं...';
+  try{const r=await api('rank',{action:'report',rt:net.rt,rank,total:TOTAL,kills:player.kills}),t=tierOf(r.stats.pts);
+    el.innerHTML=(r.gain?'+'+r.gain+' अंक  •  ':'')+svgIcon(t.icon,22)+' <b>'+t.name+'</b>  ('+r.stats.pts+' अंक)'+(t.next?'  •  अगले रैंक '+t.nextName+' तक '+t.next+' अंक':'');}
+  catch(e){el.textContent='';}
+}
+const WIN_MSG=[['शाबाश शेर! आज का भौकाल तुम्हारा!','तुम्हारे सामने कोई नहीं टिक पाया — चिकन डिनर 🍗 तुम्हारा हुआ!'],['वाह भाई वाह! सबको धूल चटा दी!','आख़िरी साँस तक डटे रहे — यही है असली भौकाल।'],['ये हुई ना बात! मैदान तुम्हारा!','ज़बरदस्त खेल — पूरे मैदान में बस तुम ही बचे।']];
+const LOSE_MSG=[['हार गए, पर हिम्मत मत हारना!','अगली बार दुगुने जोश से आना — भौकाल पक्का मचेगा।'],['बस थोड़ा सा चूक गए!','हर हार कुछ सिखाती है — चलो एक बार और!'],['कोई बात नहीं, शेर!','गिरकर उठने वाला ही असली खिलाड़ी है।']];
+function confetti(){
+  const cols=['#ffcf40','#ff6b6b','#6ff08a','#6ab0ff','#e08aff','#ff9a3a'];
+  for(let i=0;i<110;i++){const d=document.createElement('div');d.className='confetti';d.style.left=Math.random()*100+'vw';d.style.background=cols[i%cols.length];d.style.animationDuration=(2.5+Math.random()*3)+'s';d.style.animationDelay=(Math.random()*1.5)+'s';d.style.transform='rotate('+Math.random()*360+'deg)';document.body.appendChild(d);setTimeout(()=>d.remove(),7500);}
+}
+const mapBtns=document.querySelectorAll('button.mp');let selMap='gaon';
+try{selMap=localStorage.getItem('bb_map')==='registan'?'registan':'gaon';}catch(e){}
+function paintMap(){mapBtns.forEach(b=>b.classList.toggle('on',b.dataset.map===selMap));}
+mapBtns.forEach(b=>b.onclick=()=>{selMap=b.dataset.map;try{localStorage.setItem('bb_map',selMap);}catch(e){}paintMap();});
+paintMap();
 function showAcct(){
   $('mpLogin').style.display=acct?'none':'block';$('mpRoom').style.display=acct?'block':'none';
-  if(acct)$('whoami').textContent=acct.username;
+  if(acct){$('whoami').textContent=acct.username;refreshMyRank();}
 }
 const menuErr=t=>{$('menuErr').style.color='#ff7a7a';$('menuErr').textContent=t||'';};
 async function doAuth(action){
@@ -1501,7 +1687,7 @@ $('btnLogout').onclick=e=>{e.preventDefault();acct=null;try{localStorage.removeI
 async function roomAction(action){
   initAudio();menuErr('');
   try{
-    const r=await api('room',{action,token:acct.token,code:$('code').value.trim()});
+    const r=await api('room',{action,token:acct.token,code:$('code').value.trim(),map:selMap});
     net.id=r.me;net.rt=r.rt;net.code=r.code;player.id=r.me;state='lobby';
     $('menu').style.display='none';$('lobby').style.display='flex';
     lobbyUpdate(r);lobPoll=setInterval(lobbyTick,1000);
@@ -1527,7 +1713,7 @@ function lobbyUpdate(s){
   if(lobStarted)return;
   const esc=t=>String(t).replace(/[<>&]/g,'');
   $('plist').innerHTML=s.players.map(p=>`<div>${p.id===s.hostId?'👑 ':'🎮 '}<b>${esc(p.name)}</b>${p.id===net.id?' (tum)':''}</div>`).join('');
-  $('lobInfo').innerHTML=`Room CODE: <b style="color:#ffb300;font-size:28px;letter-spacing:3px">${s.code}</b><br>Players: ${s.players.length} (min ${s.min}, max ${s.max}) — bots nahi honge`;
+  $('lobInfo').innerHTML=`Room CODE: <b style="color:#ffb300;font-size:28px;letter-spacing:3px">${s.code}</b><br>Map: <b>${s.map==='registan'?'Registan (Rajasthan)':'Gaon'}</b> • Players: ${s.players.length} (min ${s.min}, max ${s.max}) — bots nahi honge`;
   const secs=s.startAt?Math.max(0,Math.ceil((s.startAt-s.now)/1000)):0;
   const amHost=s.hostId===net.id;
   $('startMP').style.display=amHost&&!s.started?'inline-block':'none';
@@ -1539,7 +1725,7 @@ function lobbyUpdate(s){
     lobStarted=true;clearInterval(lobPoll);
     net.hostId=s.hostId;net.isHost=s.hostId===net.id;net.on=true;net.cursor=0;
     net.iv=setInterval(netPump,150);
-    beginMatch(s.seed,s.players.map((p,i)=>({id:p.id,name:p.name,slot:i})));
+    beginMatch(s.seed,s.players.map((p,i)=>({id:p.id,name:p.name,slot:i})),s.map);
   }
 }
 function onNet(m){
@@ -1666,7 +1852,7 @@ function mapActors(px,pz,enemyR,jumpR){ // paas ke dushman (zameen par) aur hawa
 }
 function drawBigMap(){
   const S=bmc.width,k=S/(2*LIM),X=x=>(x+LIM)*k,Y=z=>(z+LIM)*k,g=bctx;
-  g.clearRect(0,0,S,S);g.fillStyle='#4a7a3c';g.fillRect(0,0,S,S);
+  g.clearRect(0,0,S,S);g.fillStyle=MAP.big;g.fillRect(0,0,S,S);
   g.strokeStyle='#ffffff10';g.lineWidth=1;for(let i=1;i<8;i++){g.beginPath();g.moveTo(i*S/8,0);g.lineTo(i*S/8,S);g.moveTo(0,i*S/8);g.lineTo(S,i*S/8);g.stroke();}
   for(const r of roads){g.strokeStyle=r.w>5?'#3b3b40':'#9a8a66';g.lineWidth=Math.max(1.5,r.w*k);g.beginPath();g.moveTo(X(r.ax),Y(r.az));g.lineTo(X(r.bx),Y(r.bz));g.stroke();}
   for(const b of buildings){g.fillStyle=b.F>=5?'#9aa0ab':b.F>=3?'#c4bfb0':b.F===2?'#dcd5c0':'#efe8d0';g.fillRect(X(b.cx-b.w/2),Y(b.cz-b.d/2),Math.max(2,b.w*k),Math.max(2,b.d*k));}
@@ -1972,7 +2158,7 @@ const mm=$('mm').getContext('2d');
 function drawMinimap(){
   const S=170,c=S/2,R=75,k=c/R,px=player.pos.x,pz=player.pos.z;
   mm.save();mm.clearRect(0,0,S,S);mm.beginPath();mm.arc(c,c,c,0,6.283);mm.clip();
-  mm.fillStyle='#3d6a35';mm.fillRect(0,0,S,S);
+  mm.fillStyle=MAP.mini;mm.fillRect(0,0,S,S);
   const X=x=>c+(x-px)*k,Y=z=>c+(z-pz)*k;
   for(const r of roads){mm.strokeStyle=r.w>5?'#44444a':'#8f7f5c';mm.lineWidth=Math.max(1.5,r.w*k);mm.beginPath();mm.moveTo(X(r.ax),Y(r.az));mm.lineTo(X(r.bx),Y(r.bz));mm.stroke();}
   for(const b of buildings){if(Math.abs(b.cx-px)>R+20||Math.abs(b.cz-pz)>R+20)continue;mm.fillStyle=b.F>=5?'#8f95a0':b.F>=3?'#bdb8a8':'#e0d9c2';mm.fillRect(X(b.cx-b.w/2),Y(b.cz-b.d/2),b.w*k,b.d*k);}
@@ -2043,6 +2229,54 @@ function updateHUD(){
   drawMinimap();
 }
 
+/* ============ hawa (wind) + reti ka toofan — sirf Registan map par ============ */
+const wind={on:false,dx:1,dz:0,speed:0,storm:0,ph1:0,ph2:0,pts:null,n:1700,gain:null,txt:''};
+function setupWind(seed){
+  if(wind.pts){scene.remove(wind.pts);wind.pts.geometry.dispose();wind.pts=null;}
+  wind.on=DESERT;if(!DESERT)return;
+  const r=mulberry32(seed^0x51ed270b),a=r()*6.283;wind.dx=Math.cos(a);wind.dz=Math.sin(a);wind.ph1=r()*100;wind.ph2=r()*100;
+  const pos=new Float32Array(wind.n*3);for(let i=0;i<wind.n;i++){pos[i*3]=(Math.random()-.5)*130;pos[i*3+1]=Math.random()*8;pos[i*3+2]=(Math.random()-.5)*130;}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  wind.pts=new THREE.Points(g,new THREE.PointsMaterial({color:0xe6c488,size:3,map:softTex('rgba(255,236,190,.95)','rgba(240,210,150,.45)'),transparent:true,opacity:.35,depthWrite:false,fog:false,sizeAttenuation:false}));
+  wind.pts.frustumCulled=false;scene.add(wind.pts);
+}
+function windSound(){
+  if(!AC||wind.gain)return;
+  const len=AC.sampleRate*2,buf=AC.createBuffer(1,len,AC.sampleRate),d=buf.getChannelData(0);let l=0;
+  for(let i=0;i<len;i++){l=l*.97+(Math.random()*2-1)*.03;d[i]=l*6;} // hawa ka halka shor
+  const src=AC.createBufferSource();src.buffer=buf;src.loop=true;
+  const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=520;f.Q.value=.6;
+  wind.gain=AC.createGain();wind.gain.gain.value=0;src.connect(f);f.connect(wind.gain);wind.gain.connect(AC.destination);src.start();
+}
+function updateWind(dt){
+  const box=$('windbox');
+  if(!wind.on){if(box.style.display!=='none')box.style.display='none';return;}
+  const t=matchT;
+  wind.storm=clamp(Math.sin(t*.012+wind.ph1)*1.5-.55,0,1)*(.65+.35*Math.sin(t*.07+wind.ph2)); // kabhi-kabhi toofan
+  wind.speed=10+9*(Math.sin(t*.05+wind.ph2)*.5+.5)+34*wind.storm; // km/h
+  const ground=player.ph>=3,pts=wind.pts;pts.visible=ground;
+  if(ground){
+    const ms=wind.speed/3.6,vx=wind.dx*(ms*1.4+3),vz=wind.dz*(ms*1.4+3),pos=pts.geometry.attributes.position.array,cx=camera.position.x,cz=camera.position.z;
+    for(let i=0;i<wind.n;i++){
+      let x=pos[i*3]+vx*dt,z=pos[i*3+2]+vz*dt;
+      x=cx+(((x-cx+65)%130)+130)%130-65;z=cz+(((z-cz+65)%130)+130)%130-65;
+      pos[i*3]=x;pos[i*3+2]=z;pos[i*3+1]=Math.max(.15,pos[i*3+1]+Math.sin(t*2.3+i)*dt*.25);
+      if(pos[i*3+1]>9)pos[i*3+1]=.2;
+    }
+    pts.geometry.attributes.position.needsUpdate=true;
+    pts.material.opacity=.3+.5*wind.storm;pts.material.size=2.6+2.6*wind.storm;
+    scene.fog.near=fogBase.n*(1-.7*wind.storm);scene.fog.far=fogBase.f*(1-.55*wind.storm); // toofan mein dhundh
+  }
+  windSound();if(wind.gain)wind.gain.gain.setTargetAtTime(ground?.015+.1*wind.storm+.02*(wind.speed/40):.01,AC.currentTime,.3);
+  // HUD: hawa ka teer (screen ke hisaab se)
+  const yaw=player.yaw,wf=wind.dx*(-Math.sin(yaw))+wind.dz*(-Math.cos(yaw)),wr=wind.dx*Math.cos(yaw)+wind.dz*(-Math.sin(yaw));
+  if(box.style.display==='none')box.style.display='flex';
+  $('windArrow').style.transform='rotate('+(Math.atan2(wr,wf)*57.3)+'deg)';
+  const txt='Hawa '+Math.round(wind.speed)+' km/h'+(wind.storm>.45?'  •  TOOFAN!':'');
+  if(txt!==wind.txt){wind.txt=txt;$('windTxt').textContent=txt;}
+  box.className=wind.storm>.45?'storm':'';
+}
+
 /* ============ main loop ============ */
 let last=performance.now(),gameTime=0,matchT=0;
 function updateItems(dt,time){
@@ -2061,9 +2295,13 @@ function updateItems(dt,time){
 function gameOver(win,rank){
   if(state==='over')return;
   state='over';document.exitPointerLock();$('hud').style.display='none';$('bigmap').style.display='none';mapOpen=false;$('pause').style.display='none';
-  $('endT').textContent=win?'WINNER WINNER CHICKEN DINNER! 🍗':'Aap haar gaye 💀';
+  $('endT').textContent=win?'🍗 चिकन डिनर!':'💀 खेल ख़त्म';
   $('endT').style.color=win?'#ffb300':'#ff5a5a';
-  $('endS').textContent=`Rank #${rank} / ${TOTAL}   |   Kills: ${player.kills}   |   Time: ${Math.floor(matchT/60)}m ${Math.floor(matchT%60)}s`;
+  const hm=(win?WIN_MSG:LOSE_MSG)[Math.floor(Math.random()*3)];
+  $('endMsg').innerHTML='<div class="hin'+(win?'':' lose')+'">'+hm[0]+'</div><div class="sub">'+IC(hm[1])+'</div>';
+  if(win)setTimeout(confetti,400);
+  $('endS').textContent=`रैंक #${rank} / ${TOTAL}   |   किल: ${player.kills}   |   समय: ${Math.floor(matchT/60)} मिनट ${Math.floor(matchT%60)} सेकंड`;
+  reportRank(rank);
   $('endK').textContent=(!win&&player.killer)?player.killer.txt:'';
   $('specBtn').style.display=(!win&&actors.some(a=>a.alive&&a!==player))?'inline-block':'none';
   setTimeout(()=>{$('end').style.display='flex';},win?500:1400);
@@ -2109,7 +2347,7 @@ function loop(now){
       for(const a of actors){
         if(a.isPlayer)continue;
         if(a.isRemote)updateRemote(a,dt);else if(a.isProxy)updateProxy(a,dt);else if(a.isBot)updateBot(a,dt,gameTime);}
-      updateItems(dt,gameTime);updateNades(dt);updateFx(dt);updateIndicators(dt);updateCrates(dt);
+      updateItems(dt,gameTime);updateNades(dt);updateFx(dt);updateIndicators(dt);updateCrates(dt);updateWind(dt);
       dmgFlash=Math.max(0,dmgFlash-dt*.8);
       netTick(dt);
     }
@@ -2129,14 +2367,16 @@ function loop(now){
 }
 
 /* ============ match start ============ */
-function beginMatch(seed,plist){
+function beginMatch(seed,plist,mapId){
   $('menu').style.display='none';$('lobby').style.display='none';$('load').style.display='flex';
-  setTimeout(()=>{startMatch(seed,plist);$('load').style.display='none';},40);
+  setTimeout(()=>{startMatch(seed,plist,mapId);$('load').style.display='none';},40);
 }
-function startMatch(seed,plist){
+function startMatch(seed,plist,mapId){
+  applyTheme(mapId||'gaon');
   // 1) duniya (sabke liye same seed)
   rand=mulberry32(seed);
   buildWorld();
+  setupWind(seed);
   // 2) jahaz ka raasta (sabke liye same) — sab jahaz se shuru karte hain
   rand=mulberry32(seed^0x5bd1e995);
   setupPlane();
@@ -2162,7 +2402,7 @@ function startMatch(seed,plist){
 }
 function initAudio(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();}
 $('solo').onclick=()=>{initAudio();net.on=false;net.isHost=true;net.id=0;player.name=$('name').value.trim()||'Tum';
-  beginMatch(Math.floor(Math.random()*1e9),[{id:0,name:player.name,slot:0}]);};
+  beginMatch(Math.floor(Math.random()*1e9),[{id:0,name:player.name,slot:0}],selMap);};
 function quitGame(){ // match se bahar -> main menu
   if(!confirm('Game se bahar nikalna hai? Ye match khatam ho jayega.'))return;
   netLeave();
@@ -2178,7 +2418,7 @@ const QS=new URLSearchParams(location.search),TEST=QS.has('test');
 window.addEventListener('error',e=>{document.title='ERR: '+e.message+' @'+e.lineno+':'+e.colno;});
 if(QS.has('auto')){
   net.on=false;net.isHost=true;net.id=0;
-  beginMatch(parseInt(QS.get('seed')||'12345'),[{id:0,name:'Test',slot:0}]);
+  beginMatch(parseInt(QS.get('seed')||'12345'),[{id:0,name:'Test',slot:0}],QS.get('theme')||'gaon');
   setTimeout(()=>{
     $('pause').style.display='none';
     if(QS.has('tp')||QS.has('climb')||QS.has('climbx')||QS.has('bike')){player.ph=3;player.ch.hid=false;player.ch.group.visible=true;} // seedha zameen par
@@ -2225,6 +2465,17 @@ if(QS.has('auto')){
     const tp=(QS.get('tp')||'').split(',').map(Number);
     if(tp.length>=2&&!isNaN(tp[0])){player.pos.set(tp[0],tp[3]||0,tp[1]);player.viewY=tp[3]||0;player.yaw=(tp[2]||0)*Math.PI/180;player.pitch=(tp[4]||0)*Math.PI/180;}
     if(QS.has('fpp'))player.fpp=true;
+    if(QS.has('endtest')){player.kills=3;matchT=312;gameOver(QS.get('endtest')==='win',QS.get('endtest')==='win'?1:5);setTimeout(()=>{$('end').style.display='flex';},50);}
+    if(QS.has('lbtest'))openLeaderboard();
+    if(QS.has('hide')){const H=QS.get('hide').split(',');if(H.includes('wind')){wind.on=false;if(wind.pts)wind.pts.visible=false;}if(H.includes('zone')){zoneWall.visible=false;zoneRing.visible=false;}if(H.includes('sun'))sunDisc.visible=false;if(H.includes('cloud'))cloudGroup.visible=false;if(H.includes('roads'))scene.traverse(o=>{if(o.geometry&&o.geometry.type==='PlaneGeometry'&&o.geometry.parameters.width<12)o.visible=false;});if(H.includes('buf'))scene.traverse(o=>{if(o.geometry&&o.geometry.type==='BufferGeometry'&&o.isMesh)o.visible=false;});if(H.includes('fog')){scene.fog.near=1e5;scene.fog.far=2e5;}if(H.includes('sky'))skyDome.visible=false;if(H.includes('light')){hemiL.visible=false;}if(H.includes('hud')){setInterval(()=>{$('hud').style.display='none';$('ztint').style.display='none';},50);}}
+    if(QS.has('dbgnear')){ // camera ke aas-paas koi bada mesh?
+      setTimeout(()=>{const rc=new THREE.Raycaster(),hits=[];for(const nx of[.55,0.12]){rc.setFromCamera({x:nx,y:.1},camera);rc.far=2000;const r=rc.intersectObjects(scene.children,true).slice(0,5);hits.push('['+nx+'] '+r.map(h=>h.object.geometry.type+'@'+h.distance.toFixed(1)+'/'+(h.object.material.color?h.object.material.color.getHexString():'?')+(h.object.isSprite?'S':'')+(h.object.isPoints?'P':'')).join(','));}
+        const out=[],c=camera.position;out.push(hits.join(' ## '));
+        scene.traverse(o=>{if(o.isMesh&&o.geometry){o.geometry.computeBoundingBox();const b=o.geometry.boundingBox.clone();b.applyMatrix4(o.matrixWorld);const s=b.getSize(new THREE.Vector3()).length();if(s>120&&s<3000)out.push('BIG:'+o.geometry.type+':'+s.toFixed(0)+':c='+(o.material.color?o.material.color.getHexString():'')+':p='+b.getCenter(new THREE.Vector3()).toArray().map(v=>v.toFixed(0)).join(','));}if(!o.geometry||!o.geometry.attributes||!o.geometry.attributes.position)return;const a=o.geometry.attributes.position.array;let bad=0,big=0;for(let i=0;i<a.length;i++){if(!isFinite(a[i]))bad++;else if(Math.abs(a[i])>3000)big++;}if(bad||big)out.push('BAD:'+o.geometry.type+':nan'+bad+':big'+big+':'+(o.material.color?o.material.color.getHexString():''));});
+        scene.traverse(o=>{if(!o.isMesh&&!o.isPoints&&!o.isSprite)return;if(!o.geometry)return;o.geometry.computeBoundingBox();const b=o.geometry.boundingBox.clone();b.applyMatrix4(o.matrixWorld);
+          const d=b.distanceToPoint(c),sz=b.getSize(new THREE.Vector3()).length();if(d<9&&sz>3)out.push(o.geometry.type+':d'+d.toFixed(1)+':sz'+sz.toFixed(0)+':'+(o.isInstancedMesh?'inst':'')+':'+(o.material.color?o.material.color.getHexString():'')+':'+(o.isPoints?'PTS':''));});
+        document.title='NEAR cam='+c.x.toFixed(0)+','+c.y.toFixed(1)+','+c.z.toFixed(0)+' '+out.slice(0,14).join(' | ');},3000);
+    }
     if(QS.has('chartest')){ // saamne ek avatar khada karo (chehra dekhne ke liye)
       player.ph=3;player.ch.hid=false;player.ch.group.visible=true;player.landed=true;
       const fx=-Math.sin(player.yaw),fz=-Math.cos(player.yaw),r=makeRemote({id:99,name:'Test',slot:parseInt(QS.get('chartest'))||0});
@@ -2260,7 +2511,7 @@ if(QS.has('auto')){
       }else document.title='CLIMB: no building';
     }
     if(QS.has('bike')){const b=bikes[bikes.length-1];player.bike=b;b.rider=player;}
-    if(!QS.has('climb')&&!QS.has('climbx')&&!QS.has('landtest')&&!QS.has('killtest'))document.title='READY b='+buildings.length+' c='+colliders.length+' i='+items.length+' bk='+bikes.length+' F='+[1,2,3,4,5,6].map(f=>buildings.filter(b=>b.F===f).length).join('/')+' sp='+Math.round(player.pos.x)+','+Math.round(player.pos.z)+' v='+villages.map(v=>v.name+':'+Math.round(v.x)+','+Math.round(v.z)).join(';');
+    if(!QS.has('climb')&&!QS.has('climbx')&&!QS.has('landtest')&&!QS.has('killtest')&&!QS.has('dbgnear'))document.title='READY b='+buildings.length+' c='+colliders.length+' i='+items.length+' bk='+bikes.length+' F='+[1,2,3,4,5,6].map(f=>buildings.filter(b=>b.F===f).length).join('/')+' sp='+Math.round(player.pos.x)+','+Math.round(player.pos.z)+' v='+villages.map(v=>v.name+':'+Math.round(v.x)+','+Math.round(v.z)).join(';');
   },600);
 }
 requestAnimationFrame(loop);

@@ -1,6 +1,6 @@
 // public/icons.js banata hai: sirf wahi Lucide icons jo game mein use hote hain (poori library 500KB hai, ye ~10KB)
 import fs from 'fs'; import path from 'path'; import { pathToFileURL } from 'url';
-const names = ['users','user','skull','bomb','bike','plane','flag','power','drumstick','globe','copy','play','eye','chevron-left','chevron-right','crosshair','circle-dot','siren','motorbike','triangle','check','heart','heart-pulse','shield','swords','timer','crown','gamepad-2','person-standing','bed-single','map-pin','wind','arrow-down','zap','log-out','scan','flame','target','radio','pill','sword','arrow-right','radar','tent-tree','mountain','ruler','info','lock','map','mouse-pointer-2','hand','footprints','package'];
+const names = ['users','user','skull','bomb','bike','plane','flag','power','drumstick','globe','copy','play','eye','chevron-left','chevron-right','crosshair','circle-dot','siren','motorbike','triangle','check','heart','heart-pulse','shield','swords','timer','crown','gamepad-2','person-standing','bed-single','map-pin','wind','arrow-down','zap','log-out','scan','flame','target','radio','pill','sword','arrow-right','radar','tent-tree','mountain','ruler','info','lock','map','mouse-pointer-2','hand','footprints','package','trophy','medal','award','arrow-up','sun','sprout','castle'];
 const dir = path.resolve('node_modules/lucide/dist/esm/icons'), out = {}, miss = [];
 for (const n of names) {
   const f = path.join(dir, n + '.mjs');
