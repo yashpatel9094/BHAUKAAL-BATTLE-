@@ -137,8 +137,21 @@ input{font-size:16px;padding:8px 12px;border-radius:6px;border:1px solid #fff4;b
   </table>
   <div><input id="name" maxlength="14" placeholder="Apna naam" value="Player"></div>
   <div><button id="solo">AKELE KHELO (Bots)</button></div>
-  <div><input id="addr" type="hidden"><input id="code" maxlength="12" placeholder="Room CODE" style="width:130px;text-transform:uppercase"><button id="multi" class="b2">MULTIPLAYER</button></div>
-  <p style="opacity:.7;font-size:13px">Dost same CODE daalein. Pehle code daalne ke 30 sec baad match khud shuru hoga, jinhone code dala wo sab judenge.</p>
+  <div id="mpBox" style="margin-top:10px;padding:10px 14px;border:1px solid #2a4a7a;border-radius:10px;background:#0d1a2e">
+    <div style="font-weight:700;color:#7ab8ff;margin-bottom:6px">🌐 MULTIPLAYER</div>
+    <div id="mpLogin">
+      <input id="uname" maxlength="14" placeholder="Username" autocomplete="username" style="width:140px">
+      <input id="upass" type="password" maxlength="64" placeholder="Password" autocomplete="current-password" style="width:140px">
+      <button id="btnLogin" class="b2">LOGIN</button><button id="btnSignup" class="b3" style="background:#2e7d32">SIGN UP</button>
+    </div>
+    <div id="mpRoom" style="display:none">
+      <div style="margin-bottom:6px">👤 <b id="whoami"></b> <a href="#" id="btnLogout" style="color:#ff9a9a;font-size:13px;margin-left:8px">logout</a></div>
+      <button id="btnCreate" class="b2">ROOM BANAO</button>
+      <input id="code" maxlength="8" placeholder="Room CODE" style="width:120px;text-transform:uppercase">
+      <button id="btnJoin" class="b2">JOIN</button>
+    </div>
+    <p style="opacity:.7;font-size:12px;margin:6px 0 0;max-width:480px">Room banao, code dost ko do. Kam se kam 4 players hote hi 30 sec ka timer chalta hai, phir match shuru (max 30). Baaki jagah bots.</p>
+  </div>
   <div><button class="b3" onclick="exitApp()">⏻ EXIT</button></div>
   <p id="menuErr" style="color:#ff7a7a;margin-top:6px;font-size:14px"></p>
 </div>
@@ -147,9 +160,9 @@ input{font-size:16px;padding:8px 12px;border-radius:6px;border:1px solid #fff4;b
   <h1 style="font-size:40px">LOBBY</h1>
   <h2 id="lobInfo"></h2>
   <div id="plist"></div>
-  <div><button id="startMP" style="display:none">MATCH SHURU KARO</button><button class="b3" onclick="leaveLobby()">⏻ LOBBY SE BAHAR</button></div>
+  <div><button class="b3" onclick="leaveLobby()">⏻ LOBBY SE BAHAR</button></div>
   <p id="lobWait" style="opacity:.8;margin-top:8px">Host ke match shuru karne ka wait...</p>
-  <p style="opacity:.6;font-size:13px;margin-top:10px;max-width:520px">Khali jagah bots se bhari jaayengi (total 16). Dost same WiFi pe upar wala link browser mein khole.</p>
+  <p style="opacity:.6;font-size:13px;margin-top:10px;max-width:520px">Khali jagah bots se bhari jaayengi (minimum 16 total). Room CODE dost ko batao.</p>
 </div>
 <div id="pause" class="screen"><h1 style="font-size:40px" id="pauseT">PAUSE</h1><h2 id="pauseS">Wapas aane ke liye click karo</h2><button id="resume">JAARI RAKHO</button><button class="b3" onclick="quitGame()">⏻ BAHAR NIKLO (Exit)</button></div>
 <div id="end" class="screen"><h1 id="endT"></h1><h2 id="endS"></h2><button onclick="location.reload()">DOBARA KHELO</button></div>
@@ -165,7 +178,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const wrapAng=a=>{while(a>Math.PI)a-=2*Math.PI;while(a<-Math.PI)a+=2*Math.PI;return a;};
 const V3=THREE.Vector3;
 const $=id=>document.getElementById(id);
-const LIM=400, TOTAL=16;
+const LIM=400;let TOTAL=16;
 const r2=v=>Math.round(v*100)/100;
 const lin=hex=>new THREE.Color(hex).convertSRGBToLinear(); // sRGB hex -> linear (sahi rang ke liye)
 
@@ -1301,37 +1314,88 @@ function updateRemote(a,dt){
 }
 
 /* ============ NETWORK ============ */
-const net={on:false,ws:null,id:0,isHost:true,seed:0,players:[],sT:0,bT:0,zT:0,lan:[],port:8000};
-function send(o){if(net.on&&net.ws&&net.ws.readyState===1)net.ws.send(JSON.stringify(o));}
-function connect(addr){
-  $('menuErr').textContent='';
-  let ws;try{ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+addr);}catch(e){$('menuErr').textContent='Server address galat hai';return;}
-  net.ws=ws;
-  ws.onopen=()=>{net.on=true;send({t:'join',name:$('name').value.trim()||'Player',code:$('code').value.trim()});};
-  ws.onerror=()=>{if(!net.on)$('menuErr').textContent='Server se connect nahi hua. PC pe "node server.js" chalao aur address check karo.';};
-  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch{return;}onNet(m);};
-  ws.onclose=()=>{if(state==='menu'||state==='lobby'){net.on=false;$('lobby').style.display='none';$('menu').style.display='flex';if(!$('menuErr').textContent)$('menuErr').textContent='Server se connection toot gaya.';state='menu';}
-    else if(state==='play'){showMsg('Server se connection toot gaya!');net.on=false;}};
+const net={on:false,id:0,isHost:true,hostId:0,code:'',rt:'',cursor:0,out:[],outK:{},busy:false,err:0,iv:0,sT:0,bT:0,zT:0};
+async function api(path,body){
+  let r;try{r=await fetch('/api/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}catch(e){throw new Error('Server se connect nahi hua');}
+  const j=await r.json().catch(()=>({error:'Server ka jawab samajh nahi aaya'}));
+  if(!r.ok||j.error)throw new Error(j.error||'Error');return j;
 }
-function refreshLobby(list,host){
-  net.isHost=host===net.id;
-  $('plist').innerHTML=list.map(p=>`<div>${p.id===host?'👑 ':'🎮 '}<b>${p.name.replace(/[<>&]/g,'')}</b>${p.id===net.id?' (tum)':''}</div>`).join('');
-  $('startMP').style.display=net.isHost?'inline-block':'none';$('lobWait').style.display=net.isHost?'none':'block';
-  $('lobInfo').textContent=`Code: ${net.code} — Players: ${list.length}/16 — baaki jagah bots se bharegi`;
+// game ke messages: batch karke har ~150 ms par bhejte/lete hain (Vercel API se)
+function send(o){
+  if(!net.on)return;
+  if(o.to==='host')o={...o,to:net.hostId};
+  if(o.t==='s'||o.t==='B'||o.t==='Z')net.outK[o.t]=o;else if(net.out.length<300)net.out.push(o);
 }
-let lobTimer=0;
-function startLobCountdown(secs){clearInterval(lobTimer);let s=secs;const t=()=>{$('lobWait').style.display='block';$('lobWait').textContent=s>0?`⏱ Match ${s} sec mein shuru hoga — abhi code daalne wale judte jayenge`:'Match shuru ho raha hai...';if(net.isHost)$('lobWait').textContent+=' (ya abhi shuru karo)';};t();lobTimer=setInterval(()=>{s=Math.max(0,s-1);t();},1000);}
+async function netPump(){
+  if(net.busy||!net.on)return;net.busy=true;
+  const msgs=net.out.concat(Object.values(net.outK));net.out=[];net.outK={};
+  try{
+    const r=await api('relay',{rt:net.rt,cursor:net.cursor,msgs});
+    net.cursor=r.cursor;net.err=0;
+    for(const m of r.msgs){try{onNet(m);}catch(e){console.error(e);}}
+  }catch(e){
+    net.err++;net.out=msgs.filter(m=>m.t!=='s'&&m.t!=='B'&&m.t!=='Z').concat(net.out).slice(-300);
+    if(net.err===8)showMsg('⚠ Connection kamzor hai...');
+    if(net.err>60){showMsg('Server se connection toot gaya!');net.on=false;clearInterval(net.iv);}
+  }
+  net.busy=false;
+}
+function netLeave(){
+  if(!net.rt)return;
+  try{navigator.sendBeacon('/api/room',new Blob([JSON.stringify({action:'leave',rt:net.rt})],{type:'application/json'}));}catch(e){}
+  net.rt='';
+}
+addEventListener('pagehide',netLeave);
+/* ---- login + room ---- */
+let acct=null;try{acct=JSON.parse(localStorage.getItem('bb_acct')||'null');}catch(e){}
+function showAcct(){
+  $('mpLogin').style.display=acct?'none':'block';$('mpRoom').style.display=acct?'block':'none';
+  if(acct)$('whoami').textContent=acct.username;
+}
+const menuErr=t=>{$('menuErr').style.color='#ff7a7a';$('menuErr').textContent=t||'';};
+async function doAuth(action){
+  menuErr('');const username=$('uname').value.trim(),password=$('upass').value;
+  try{const r=await api('auth',{action,username,password});acct={username:r.username,token:r.token};
+    try{localStorage.setItem('bb_acct',JSON.stringify(acct));}catch(e){}showAcct();$('upass').value='';
+  }catch(e){menuErr(e.message);}
+}
+showAcct();
+$('btnLogin').onclick=()=>doAuth('login');
+$('btnSignup').onclick=()=>doAuth('signup');
+$('btnLogout').onclick=e=>{e.preventDefault();acct=null;try{localStorage.removeItem('bb_acct');}catch(_){}showAcct();};
+async function roomAction(action){
+  initAudio();menuErr('');
+  try{
+    const r=await api('room',{action,token:acct.token,code:$('code').value.trim()});
+    net.id=r.me;net.rt=r.rt;net.code=r.code;player.id=r.me;state='lobby';
+    $('menu').style.display='none';$('lobby').style.display='flex';
+    lobbyUpdate(r);lobPoll=setInterval(lobbyTick,1000);
+  }catch(e){if(/login/i.test(e.message)){acct=null;showAcct();}menuErr(e.message);}
+}
+$('btnCreate').onclick=()=>roomAction('create');
+$('btnJoin').onclick=()=>{if(!$('code').value.trim()){menuErr('Room CODE daalo');return;}roomAction('join');};
+let lobPoll=0,lobOff=0,lobStarted=false;
+async function lobbyTick(){
+  try{lobbyUpdate(await api('room',{action:'status',code:net.code}));}
+  catch(e){clearInterval(lobPoll);alert(e.message);location.reload();}
+}
+function lobbyUpdate(s){
+  if(lobStarted)return;
+  const esc=t=>String(t).replace(/[<>&]/g,'');
+  $('plist').innerHTML=s.players.map(p=>`<div>${p.id===s.hostId?'👑 ':'🎮 '}<b>${esc(p.name)}</b>${p.id===net.id?' (tum)':''}</div>`).join('');
+  $('lobInfo').innerHTML=`Room CODE: <b style="color:#ffb300;font-size:28px;letter-spacing:3px">${s.code}</b><br>Players: ${s.players.length} (min ${s.min}, max ${s.max}) — baaki jagah bots se bharegi`;
+  const secs=s.startAt?Math.max(0,Math.ceil((s.startAt-s.now)/1000)):0;
+  $('lobWait').style.display='block';
+  $('lobWait').textContent=s.started?'Match shuru ho raha hai...':s.startAt?`⏱ Match ${secs} sec mein shuru hoga — jo bhi code daalega judta jayega`:`⏳ Kam se kam ${s.min} players chahiye (${s.players.length}/${s.min}) — dost ko code do`;
+  if(s.started){
+    lobStarted=true;clearInterval(lobPoll);
+    net.hostId=s.hostId;net.isHost=s.hostId===net.id;net.on=true;net.cursor=0;
+    net.iv=setInterval(netPump,150);
+    beginMatch(s.seed,s.players.map((p,i)=>({id:p.id,name:p.name,slot:i})));
+  }
+}
 function onNet(m){
   switch(m.t){
-    case 'welcome':
-      net.id=m.id;net.code=m.code;net.lan=m.lan||[];net.port=m.port||8000;player.id=m.id;state='lobby';startLobCountdown(m.secs);
-      $('menu').style.display='none';$('lobby').style.display='flex';
-      $('lobInfo').textContent='';
-      break;
-    case 'players':refreshLobby(m.list,m.host);startLobCountdown(m.secs);
-      $('lobInfo').insertAdjacentHTML('beforeend',net.lan.length?`<br>Dost is link se judein: <b style="color:#ffb300">http://${net.lan[0]}:${net.port}</b>`:'');break;
-    case 'err':$('menuErr').textContent=m.msg;$('lobby').style.display='none';$('menu').style.display='flex';state='menu';break;
-    case 'start':clearInterval(lobTimer);beginMatch(m.seed,m.players);break;
     case 'hostgone':alert('Host game chhod gaya. Match khatam.');location.reload();break;
     case 'left':{const a=byId[m.id];if(a&&a.alive){a.alive=false;feed(a.name+' game chhod gaya');a.ch.group.visible=false;if(a.bikeRef){a.bikeRef.rider=null;a.bikeRef=null;}checkWin();}break;}
     case 's':{const a=byId[m.from];if(!a||!a.alive)break;
@@ -1893,7 +1957,7 @@ function startMatch(seed,plist){
   rand=mulberry32(seed^0x5bd1e995);
   setupPlane();
   plist=[...plist].sort((a,b)=>a.slot-b.slot);
-  const nBots=TOTAL-plist.length;
+  TOTAL=Math.max(16,plist.length);const nBots=TOTAL-plist.length;
   // 3) players
   for(const p of plist){
     if(p.id===net.id){player.ch=makeChar(0xe08a1e,true);player.ch.group.visible=false;player.ch.hid=true;player.name=p.name;player.id=p.id;player.ph=0;player.stance=0;
@@ -1915,22 +1979,16 @@ function startMatch(seed,plist){
 function initAudio(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();}
 $('solo').onclick=()=>{initAudio();net.on=false;net.isHost=true;net.id=0;player.name=$('name').value.trim()||'Tum';
   beginMatch(Math.floor(Math.random()*1e9),[{id:0,name:player.name,slot:0}]);};
-$('multi').onclick=()=>{initAudio();const a=$('addr').value.trim();if(!$('code').value.trim()){$('menuErr').textContent='Room CODE daalo (dost bhi wahi code daalenge)';return;}if(!a){$('menuErr').textContent='Multiplayer server abhi set nahi hai. Akele (Bots) khelo.';return;}connect(a);};
-$('startMP').onclick=()=>send({t:'start'});
 function quitGame(){ // match se bahar -> main menu
   if(!confirm('Game se bahar nikalna hai? Ye match khatam ho jayega.'))return;
-  try{if(net.ws)net.ws.close();}catch(e){}
+  netLeave();
   location.reload();
 }
-function leaveLobby(){try{if(net.ws)net.ws.close();}catch(e){}net.on=false;location.reload();}
+function leaveLobby(){clearInterval(lobPoll);netLeave();net.on=false;location.reload();}
 function exitApp(){ // browser tab band karne ki koshish
   window.close();
   setTimeout(()=>{$('menuErr').style.color='#ffd27a';$('menuErr').textContent='Browser ne band nahi karne diya — tab ko Ctrl+W se band kar do.';},300);
 }
-// Multiplayer server ka address: hosted server (Render etc.) ka naam yahan daalo, jaise 'bhaukaal-battle.onrender.com'.
-// Khali ho to jis server se page khula hai (node server.js) wahi use hota hai; Vercel par khali = multiplayer band.
-const MP_SERVER='bhaukaal-battle.onrender.com'; // sirf Vercel (online) par use hota hai; local par apna server
-$('addr').value=/vercel\.app$/.test(location.hostname)?MP_SERVER:location.host;
 // ---- test / debug hooks (sirf URL ?auto&test se) ----
 const QS=new URLSearchParams(location.search),TEST=QS.has('test');
 window.addEventListener('error',e=>{document.title='ERR: '+e.message+' @'+e.lineno+':'+e.colno;});
