@@ -14,7 +14,7 @@ http.createServer((req, res) => {
     return;
   }
   const f = url === '/' ? 'index.html' : url.replace(/^\//, '');
-  if (!['index.html', 'three.min.js'].includes(f)) { res.writeHead(404); return res.end('404'); }
+  if (!['index.html', 'three.min.js', 'icons.js'].includes(f)) { res.writeHead(404); return res.end('404'); }
   fs.readFile(path.join(ROOT, f), (e, d) => {
     if (e) { res.writeHead(404); return res.end('404'); }
     res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'text/plain', 'Cache-Control': 'no-store' });

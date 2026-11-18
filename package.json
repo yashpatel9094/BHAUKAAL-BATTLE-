@@ -2,6 +2,11 @@
   "name": "bhaukaal-battle",
   "version": "1.0.0",
   "private": true,
-  "scripts": { "start": "node server.js" },
-  "dependencies": { "redis": "^4.7.0" }
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "lucide": "^1.75.0",
+    "redis": "^4.7.0"
+  }
 }

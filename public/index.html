@@ -2,11 +2,18 @@
 <html lang="hi">
 <head>
 <meta charset="utf-8">
-<title>Mini BGMI - Battle Royale</title>
+<title>BHAUKAAL - Battle Royale</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Teko:wght@500;600&display=swap" rel="stylesheet">
+<script src="icons.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Segoe UI',Arial,sans-serif;color:#fff;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Rajdhani','Segoe UI',Arial,sans-serif;font-weight:600;color:#fff;user-select:none}
+.ic{display:inline-block;width:1.1em;height:1.1em;vertical-align:-.17em;margin-right:.22em;flex:none}
+#top span,#zone,#loc,#wpt,#prompt,#air,.hs,#feed div{backdrop-filter:blur(4px)}
+.screen h1{font-family:'Teko','Rajdhani',sans-serif}
+button{font-family:'Rajdhani','Segoe UI',sans-serif;letter-spacing:.5px}
 canvas#game{position:fixed;inset:0;display:block}
 #hud{position:fixed;inset:0;pointer-events:none;display:none}
 #mm{position:absolute;left:14px;top:14px;width:170px;height:170px;border-radius:50%;border:3px solid rgba(255,255,255,.7);box-shadow:0 0 12px #000a}
@@ -68,7 +75,7 @@ button{pointer-events:auto;background:linear-gradient(#ffb300,#e07b00);border:0;
 button.b2{background:linear-gradient(#4aa8ff,#1f6fd0);color:#fff;box-shadow:0 4px 0 #0f3f85}
 button.b3{background:linear-gradient(#e0554a,#b02a22);color:#fff;box-shadow:0 4px 0 #6a140f}
 button:hover{filter:brightness(1.12)}
-input{font-size:16px;padding:8px 12px;border-radius:6px;border:1px solid #fff4;background:#0b1520;color:#fff;margin:4px;text-align:center;width:210px}
+input{font-family:inherit;font-weight:600;font-size:17px;padding:8px 12px;border-radius:6px;border:1px solid #fff4;background:#0b1520;color:#fff;margin:4px;text-align:center;width:210px}
 #menu{display:flex}
 #plist{margin:10px 0;min-width:300px;text-align:left}
 #plist div{background:#ffffff14;padding:6px 14px;margin:3px 0;border-radius:5px}
@@ -85,7 +92,7 @@ input{font-size:16px;padding:8px 12px;border-radius:6px;border:1px solid #fff4;b
 <div id="hud">
   <canvas id="mm" width="170" height="170"></canvas>
   <div id="loc"></div><div id="wpt"></div>
-  <div id="top"><span id="alive">👥 16</span><span id="kills">☠ 0</span></div>
+  <div id="top"><span id="alive"><i data-ic="users" data-s="16"></i> 16</span><span id="kills"><i data-ic="skull" data-s="16"></i> 0</span></div>
   <div id="zone"></div>
   <div id="feed"></div>
   <div id="cross"></div><div id="hit"></div>
@@ -107,52 +114,52 @@ input{font-size:16px;padding:8px 12px;border-radius:6px;border:1px solid #fff4;b
   <canvas id="bm"></canvas>
   <div id="legend">
     <span><i style="background:#fff;color:#000">▲</i>Tum</span>
-    <span><i style="background:#d02020">👤</i>Dushman (paas mein)</span>
-    <span><i style="background:#e07a10">💥</i>Goli ki awaaz</span>
-    <span><i style="background:#7a52c7">🏍</i>Bike</span>
-    <span><i style="background:#555">💀</i>Maut / loot box</span>
-    <span><i style="background:#2a7ab0">🪂</i>Parachute</span>
-    <span><i style="background:#fff;color:#000">✈</i>Jahaz + raasta</span>
-    <span><i style="background:#0aa0c0">🚩</i>Waypoint</span>
+    <span><i style="background:#d02020"><i data-ic="user" data-s="16"></i></i>Dushman (paas mein)</span>
+    <span><i style="background:#e07a10"><i data-ic="flame" data-s="16"></i></i>Goli ki awaaz</span>
+    <span><i style="background:#7a52c7"><i data-ic="motorbike" data-s="16"></i></i>Bike</span>
+    <span><i style="background:#555"><i data-ic="skull" data-s="16"></i></i>Maut / loot box</span>
+    <span><i style="background:#2a7ab0"><i data-ic="wind" data-s="16"></i></i>Parachute</span>
+    <span><i style="background:#fff;color:#000"><i data-ic="plane" data-s="16"></i></i>Jahaz + raasta</span>
+    <span><i style="background:#0aa0c0"><i data-ic="flag" data-s="16"></i></i>Waypoint</span>
   </div>
   <p>Map pe <b>click</b> = waypoint lagao &nbsp;|&nbsp; <b>Right click</b> = hatao &nbsp;|&nbsp; Narangi chamak = goli ki awaaz (wahan dushman hai) &nbsp;|&nbsp; <b>M</b> = band karo</p>
-  <div><button onclick="toggleMap()">Wapas game mein</button><button class="b3" onclick="quitGame()">⏻ Exit</button></div>
+  <div><button onclick="toggleMap()">Wapas game mein</button><button class="b3" onclick="quitGame()"><i data-ic="power" data-s="16"></i> Exit</button></div>
 </div>
 
 <div id="menu" class="screen">
-  <h1>MINI BGMI</h1>
-  <h2>Bada map &bull; 16 khiladi &bull; 1 winner &bull; Chicken Dinner 🍗</h2>
+  <h1>BHAUKAAL</h1>
+  <h2>Bada map &bull; 16 khiladi &bull; 1 winner &bull; Chicken Dinner <i data-ic="drumstick" data-s="16"></i></h2>
   <table>
     <tr><td>W A S D</td><td>Chalna (Shift = daudna, B = baithna, Space = kudna)</td></tr>
     <tr><td>Mouse</td><td>Dekhna &nbsp;|&nbsp; Left click = goli &nbsp;|&nbsp; Right click = zoom</td></tr>
     <tr><td>E / ENTER</td><td>Gun / saman uthana, bike pe baithna / utarna</td></tr>
     <tr><td>M</td><td>Poora map (gaon, zone, goli ki awaaz, waypoint)</td></tr>
-    <tr><td>V</td><td>Third person ↔ First person</td></tr>
+    <tr><td>V</td><td>Third person / First person</td></tr>
     <tr><td>1 2 3 4 5</td><td>Slot: 1-2 badi gun, 3 pistol, 4 bomb, 5 medkit (scroll se bhi)</td></tr>
     <tr><td>G / H / R</td><td>Bomb phenko / Medkit lagao (3 sec) / Reload</td></tr>
     <tr><td>X</td><td>Scope badlo (2x 3x 4x 6x 8x) — scope chhat pe ya gharon mein milte hain</td></tr>
     <tr><td>B / Z</td><td>B = baith jao (crouch), Z = let jao (prone) — chhupne ke liye. Space = khade ho jao</td></tr>
-    <tr><td>✈ F</td><td>Match jahaz se shuru hota hai: F = kudo, W = dive, F/Space = parachute, A/D/W/S = jidhar chaho utro</td></tr>
+    <tr><td><i data-ic="plane" data-s="16"></i> F</td><td>Match jahaz se shuru hota hai: F = kudo, W = dive, F/Space = parachute, A/D/W/S = jidhar chaho utro</td></tr>
     <tr><td>Seedhi</td><td>Ghar ke bahar seedhi se chhat pe chadho, wahan se scope khol ke maro</td></tr>
   </table>
   <div><input id="name" maxlength="14" placeholder="Apna naam" value="Player"></div>
   <div><button id="solo">AKELE KHELO (Bots)</button></div>
   <div id="mpBox" style="margin-top:10px;padding:10px 14px;border:1px solid #2a4a7a;border-radius:10px;background:#0d1a2e">
-    <div style="font-weight:700;color:#7ab8ff;margin-bottom:6px">🌐 MULTIPLAYER</div>
+    <div style="font-weight:700;color:#7ab8ff;margin-bottom:6px"><i data-ic="globe" data-s="16"></i> MULTIPLAYER</div>
     <div id="mpLogin">
       <input id="uname" maxlength="14" placeholder="Username" autocomplete="username" style="width:140px">
       <input id="upass" type="password" maxlength="64" placeholder="Password" autocomplete="current-password" style="width:140px">
       <button id="btnLogin" class="b2">LOGIN</button><button id="btnSignup" class="b3" style="background:#2e7d32">SIGN UP</button>
     </div>
     <div id="mpRoom" style="display:none">
-      <div style="margin-bottom:6px">👤 <b id="whoami"></b> <a href="#" id="btnLogout" style="color:#ff9a9a;font-size:13px;margin-left:8px">logout</a></div>
+      <div style="margin-bottom:6px"><i data-ic="user" data-s="16"></i> <b id="whoami"></b> <a href="#" id="btnLogout" style="color:#ff9a9a;font-size:13px;margin-left:8px">logout</a></div>
       <button id="btnCreate" class="b2">ROOM BANAO</button>
       <input id="code" maxlength="8" placeholder="Room CODE" style="width:120px;text-transform:uppercase">
       <button id="btnJoin" class="b2">JOIN</button>
     </div>
     <p style="opacity:.7;font-size:12px;margin:6px 0 0;max-width:480px">Room banao, code dost ko do. Kam se kam 4 players hote hi 30 sec ka timer chalta hai, phir match shuru (max 30). Room mein sirf wahi khelenge jo code daalke judenge, bots nahi.</p>
   </div>
-  <div><button class="b3" onclick="exitApp()">⏻ EXIT</button></div>
+  <div><button class="b3" onclick="exitApp()"><i data-ic="power" data-s="16"></i> EXIT</button></div>
   <p id="menuErr" style="color:#ff7a7a;margin-top:6px;font-size:14px"></p>
 </div>
 
@@ -160,12 +167,12 @@ input{font-size:16px;padding:8px 12px;border-radius:6px;border:1px solid #fff4;b
   <h1 style="font-size:40px">LOBBY</h1>
   <h2 id="lobInfo"></h2>
   <div id="plist"></div>
-  <div><button class="b3" onclick="leaveLobby()">⏻ LOBBY SE BAHAR</button></div>
-  <div style="margin-top:10px"><button id="copyBtn" class="b2" onclick="copyCode()">📋 CODE COPY KARO</button><button id="startMP" style="display:none" onclick="hostStart()">▶ MATCH SHURU KARO</button></div>
+  <div><button class="b3" onclick="leaveLobby()"><i data-ic="power" data-s="16"></i> LOBBY SE BAHAR</button></div>
+  <div style="margin-top:10px"><button id="copyBtn" class="b2" onclick="copyCode()"><i data-ic="copy" data-s="16"></i> CODE COPY KARO</button><button id="startMP" style="display:none" onclick="hostStart()"><i data-ic="play" data-s="16"></i> MATCH SHURU KARO</button></div>
   <p id="lobWait" style="opacity:.8;margin-top:8px">Host ke match shuru karne ka wait...</p>
   <p style="opacity:.6;font-size:13px;margin-top:10px;max-width:520px">Sirf code daalke judne wale players khelenge, koi bot nahi. Room CODE dost ko batao.</p>
 </div>
-<div id="pause" class="screen"><h1 style="font-size:40px" id="pauseT">PAUSE</h1><h2 id="pauseS">Wapas aane ke liye click karo</h2><button id="resume">JAARI RAKHO</button><button class="b3" onclick="quitGame()">⏻ BAHAR NIKLO (Exit)</button></div>
+<div id="pause" class="screen"><h1 style="font-size:40px" id="pauseT">PAUSE</h1><h2 id="pauseS">Wapas aane ke liye click karo</h2><button id="resume">JAARI RAKHO</button><button class="b3" onclick="quitGame()"><i data-ic="power" data-s="16"></i> BAHAR NIKLO (Exit)</button></div>
 <div id="end" class="screen"><h1 id="endT"></h1><h2 id="endK" style="color:#ffcf6a"></h2><h2 id="endS"></h2><div><button id="specBtn" class="b2" style="display:none" onclick="startSpectate()">👁 DEKHO (Spectate) — aage ka game</button><button onclick="netLeave();location.reload()">DOBARA KHELO / MENU</button></div></div>
 <div id="spec" style="display:none;position:fixed;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.65);color:#fff;padding:10px 16px;border-radius:12px;z-index:40;font:600 17px 'Segoe UI',sans-serif;text-align:center">
   👁 Dekh rahe ho: <b id="specName" style="color:#ffb300"></b> <span id="specInfo" style="opacity:.8;font-size:14px"></span><br>
@@ -185,6 +192,32 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const wrapAng=a=>{while(a>Math.PI)a-=2*Math.PI;while(a<-Math.PI)a+=2*Math.PI;return a;};
 const V3=THREE.Vector3;
 const $=id=>document.getElementById(id);
+/* ============ UI icons (Lucide) ============ */
+const EMO={'👥':'users','☠':'skull','👤':'user','💥':'flame','🏍':'motorbike','💀':'skull','🪂':'wind','✈':'plane','🚩':'flag','⏻':'power','🍗':'drumstick','🌐':'globe','📋':'copy','▶':'play','👁':'eye','◀':'chevron-left','🔫':'crosshair','🔵':'circle-dot','➜':'arrow-right','⚠':'siren','✅':'check','👑':'crown','🎮':'gamepad-2','⏱':'timer','⏳':'timer','🧎':'person-standing','🛌':'bed-single','🔭':'scan','❤':'heart','💣':'bomb','🛡':'shield','✓':'check','📍':'map-pin'};
+const EMORE=new RegExp('('+Object.keys(EMO).join('|')+')\uFE0F?','gu');
+const ICOL={heart:'#ff6b6b',shield:'#6ab0ff',siren:'#ffcf40',crown:'#ffcf40',flame:'#ff9a3a',check:'#6ff08a',bomb:'#ffb36b','circle-dot':'#6ab0ff',crosshair:'#ffd27a','map-pin':'#ff8a8a',flag:'#5fd8f0',drumstick:'#ffb36b'};
+const escH=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function icoSvg(n){const s=svgIcon(n,16),c=ICOL[n];return c?s.replace('<svg ','<svg style="color:'+c+'" '):s;}
+const IC=s=>String(s).replace(EMORE,(m,e)=>icoSvg(EMO[e])); // emoji -> Lucide SVG (string pehle se html-safe ho)
+(function(){ // in elements mein text/html set karte hi emoji apne aap Lucide icon ban jate hain
+  const ihd=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');
+  for(const id of ['alive','kills','meds','zone','loc','wpt','prompt','endT','endK','endS','lobWait','copyBtn','startMP','pauseS']){
+    const el=document.getElementById(id);if(!el)continue;let raw='';
+    Object.defineProperty(el,'textContent',{configurable:true,get(){return raw;},set(v){raw=String(v);ihd.set.call(el,IC(escH(raw)));}});
+  }
+  for(const id of ['hotbar','wpn','air','plist','lobInfo']){
+    const el=document.getElementById(id);if(!el)continue;
+    Object.defineProperty(el,'innerHTML',{configurable:true,get(){return ihd.get.call(el);},set(v){ihd.set.call(el,IC(v));}});
+  }
+  hydrateIcons();
+})();
+// map ke gol badge ke andar ke icon (canvas par SVG image)
+const ICON_IMG={};
+function iconImg(n){let i=ICON_IMG[n];if(i)return i;i=new Image();const d=window.ICONS[n]||[];let s='<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">';
+  for(const [tag,a] of d){s+='<'+tag;for(const k in a)s+=' '+k+'="'+a[k]+'"';s+='/>';}s+='</svg>';
+  i.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);return(ICON_IMG[n]=i);}
+Object.values(EMO).forEach(iconImg);
+
 const LIM=400;let TOTAL=16;
 const r2=v=>Math.round(v*100)/100;
 const lin=hex=>new THREE.Color(hex).convertSRGBToLinear(); // sRGB hex -> linear (sahi rang ke liye)
@@ -838,42 +871,90 @@ function makeBike(col){
   return g;
 }
 function spinBike(b,dist){const u=b.mesh.userData;if(!u.rw)return;u.rw.rotation.x-=dist/.41;u.fw.rotation.x-=dist/.41;}
+/* ---- character: smooth (gol) limbs, standard material, chehre ka texture ---- */
+const _gc=new Map(),_mc=new Map();
+function cylG(rt,rb,h,seg){const k='c'+rt+'|'+rb+'|'+h+'|'+seg;let g=_gc.get(k);if(!g){g=new THREE.CylinderGeometry(rt,rb,h,seg);_gc.set(k,g);}return g;}
+function sphG(r,w,h){const k='s'+r+'|'+w+'|'+h;let g=_gc.get(k);if(!g){g=new THREE.SphereGeometry(r,w,h);_gc.set(k,g);}return g;}
+function stdM(c,rough,metal){const k=c+'|'+rough+'|'+metal;let m=_mc.get(k);if(!m){m=new THREE.MeshStandardMaterial({color:lin(c),roughness:rough===undefined?.82:rough,metalness:metal||0});_mc.set(k,m);}return m;}
+let _faceTex=null;
+function faceTexture(){
+  if(_faceTex)return _faceTex;
+  const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');
+  g.lineCap='round';
+  // aankhein
+  for(const x of[88,168]){
+    g.fillStyle='#f4ece4';g.beginPath();g.ellipse(x,118,19,14,0,0,6.283);g.fill();
+    g.fillStyle='#5a3a24';g.beginPath();g.arc(x,119,10,0,6.283);g.fill();
+    g.fillStyle='#120c08';g.beginPath();g.arc(x,119,5.2,0,6.283);g.fill();
+    g.fillStyle='#fff';g.beginPath();g.arc(x-3.5,114,3,0,6.283);g.fill();
+    g.strokeStyle='#2a1a10';g.lineWidth=4;g.beginPath();g.ellipse(x,118,19,14,0,Math.PI*1.05,Math.PI*1.95);g.stroke(); // palak
+  }
+  // bhauhein
+  g.strokeStyle='#3a2414';g.lineWidth=9;g.beginPath();g.moveTo(66,92);g.quadraticCurveTo(88,80,110,90);g.stroke();
+  g.beginPath();g.moveTo(146,90);g.quadraticCurveTo(168,80,190,92);g.stroke();
+  // naak ki chhaya
+  g.strokeStyle='rgba(120,70,40,.35)';g.lineWidth=5;g.beginPath();g.moveTo(128,128);g.quadraticCurveTo(121,152,130,158);g.stroke();
+  // muskaan
+  g.strokeStyle='#6a2e22';g.lineWidth=6;g.beginPath();g.moveTo(98,182);g.quadraticCurveTo(128,208,158,182);g.stroke();
+  g.fillStyle='rgba(255,120,110,.22)';g.beginPath();g.ellipse(70,160,20,12,0,0,6.283);g.fill();g.beginPath();g.ellipse(186,160,20,12,0,0,6.283);g.fill();
+  _faceTex=new THREE.CanvasTexture(c);_faceTex.anisotropy=4;return _faceTex;
+}
 function makeChar(col,hero){
   const g=new THREE.Group();g.rotation.order='YXZ';
-  const H=!!hero,acc=(typeof hero==='number')?hero:0xe0961e; // avatar: olive vest + narangi kandhe/cuff
-  const skin=H?0xe3ad84:0xe0b48c,pants=H?0x46552d:0x3b4331;
-  if(H)col=0x3d5230; // hero: aasteen hari
+  const H=!!hero,acc=(typeof hero==='number')?hero:0xe0961e;
+  const skin=H?0xe3ad84:0xe0b48c,pants=H?0x46552d:0x3b4331,boot=H?0x4a3322:0x2a2018;
+  const shirt=H?0x3d5230:col,vest=H?0x56662f:0x4b4a38;
+  const M=(geo,c,x,y,z,r,m)=>{const o=new THREE.Mesh(geo,stdM(c,r,m));o.position.set(x,y,z);return o;};
+  const cy=(rt,rb,h,c,x,y,z,sx,sz)=>{const o=M(cylG(rt,rb,h,12),c,x,y,z);if(sx||sz)o.scale.set(sx||1,1,sz||1);return o;};
+  const sp=(r,c,x,y,z,sx,sy,sz)=>{const o=M(sphG(r,12,10),c,x,y,z);o.scale.set(sx||1,sy||1,sz||1);return o;};
+  // ---- taangein (hip se hilti hain) ----
   const mkLeg=x=>{const l=new THREE.Group();l.position.set(x,.82,0);
-    l.add(bm(.2,.8,.23,pants,0,-.41,0));
-    if(H)l.add(bm(.23,.2,.32,0x4a3322,0,-.72,-.04),bm(.25,.08,.34,0x38281a,0,-.83,-.04),bm(.2,.05,.25,0x5a4330,0,-.61,-.02),bm(.05,.17,.17,0x56662f,x<0?-.125:.125,-.3,0),bm(.055,.04,.1,0x3a4421,x<0?-.15:.15,-.26,0)); // boot + cargo pocket
-    else l.add(bm(.22,.18,.3,0x2a2018,0,-.74,-.03));
+    l.add(cy(.105,.085,.42,pants,0,-.21,0),sp(.088,pants,0,-.43,0),cy(.085,.07,.36,pants,0,-.6,0));
+    l.add(cy(.088,.094,.17,boot,0,-.72,0),sp(.1,boot,0,-.8,-.05,1,.62,1.7),cy(.1,.1,.03,0x1c1410,0,-.835,-.05,1,1.7));
+    if(H){l.add(M(boxGeo,0x56662f,0,0,0),M(boxGeo,0x4a5828,0,0,0));l.children[l.children.length-2].scale.set(.055,.16,.17);l.children[l.children.length-2].position.set(x<0?-.105:.105,-.28,0);
+      l.children[l.children.length-1].scale.set(.06,.045,.11);l.children[l.children.length-1].position.set(x<0?-.12:.12,-.22,0);
+      l.add(sp(.09,0x3a4421,0,-.43,-.07,1,.8,.6));} // ghutne ka pad
     return l;};
   const legL=mkLeg(-.12),legR=mkLeg(.12);g.add(legL,legR);
+  // ---- dhad ----
+  g.add(cy(.215,.185,.62,shirt,0,1.13,0,1,.72),cy(.2,.2,.07,0x24281a,0,.85,0,1,.74));
+  g.add(cy(.07,.078,.12,skin,0,1.5,0));
   if(H){
-    g.add(bm(.52,.62,.3,col,0,1.13,0));                       // undershirt
-    g.add(bm(.58,.5,.35,0x56662f,0,1.18,0),bm(.6,.07,.36,0x3f4c25,0,.95,0)); // vest + niche patti
-    g.add(bm(.15,.13,.05,0x4a5828,-.14,1.1,-.19),bm(.15,.13,.05,0x4a5828,.14,1.1,-.19),bm(.15,.1,.05,0x4a5828,-.14,1.27,-.19),bm(.15,.1,.05,0x4a5828,.14,1.27,-.19)); // pockets
-    g.add(bm(.04,.46,.03,0x6b5a3a,0,1.17,-.19)); // zip
-    g.add(bm(.46,.08,.4,acc,0,1.47,0)); // collar
-    g.add(bm(.5,.1,.04,0x44532b,0,1.17,.19),bm(.5,.06,.05,0x2f3a1c,0,.9,.2)); // peeche
-    g.add(bm(.2,.1,.26,acc,-.37,1.43,0),bm(.2,.1,.26,acc,.37,1.43,0)); // kandhe ke pad
-    g.add(bm(.5,.05,.31,0x24281a,0,.84,0));
-  }else g.add(bm(.52,.62,.3,col,0,1.13,0),bm(.55,.42,.35,0x3a4036,0,1.2,0),bm(.4,.52,.2,0x4b4a38,0,1.15,.26),bm(.48,.06,.3,0x2a2a2a,0,.84,0));
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.2,12,10),mat(skin));head.position.y=1.6;g.add(head);
-  if(H){ // baal + chehra (aankhein, muskaan)
-    const hair=new THREE.Mesh(new THREE.SphereGeometry(.235,12,8,0,Math.PI*2,0,Math.PI/2),mat(0x4a2e20));hair.position.y=1.64;g.add(hair);
-    g.add(bm(.4,.2,.14,0x4a2e20,0,1.62,.15),bm(.34,.05,.06,0x4a2e20,0,1.71,-.12));
-    g.add(bm(.045,.06,.02,0x1a1410,-.075,1.62,-.195),bm(.045,.06,.02,0x1a1410,.075,1.62,-.195),bm(.1,.025,.02,0x7a3b2a,0,1.54,-.19),bm(.07,.018,.02,0x3a2418,-.075,1.67,-.2),bm(.07,.018,.02,0x3a2418,.075,1.67,-.2));
+    g.add(cy(.238,.205,.5,vest,0,1.18,0,1,.8),cy(.215,.215,.06,0x3f4c25,0,.95,0,1,.8));
+    for(const[px,py]of[[-.13,1.1],[.13,1.1],[-.13,1.27],[.13,1.27]]){const p=M(boxGeo,0x4a5828,px,py,-.2);p.scale.set(.14,py>1.2?.1:.13,.05);g.add(p);}
+    const zip=M(boxGeo,0x6b5a3a,0,1.17,-.2);zip.scale.set(.035,.46,.03);g.add(zip);
+    const col2=M(new THREE.TorusGeometry(.13,.04,8,20),acc,0,1.46,0);col2.rotation.x=Math.PI/2;col2.scale.set(1,.9,1);g.add(col2);
+    for(const s of[-1,1])g.add(sp(.105,acc,s*.3,1.41,0,1.15,.7,1.1));
+    const bk=M(boxGeo,0x44532b,0,1.17,.2);bk.scale.set(.46,.3,.07);g.add(bk);
   }else{
-    const helm=new THREE.Mesh(new THREE.SphereGeometry(.235,12,8,0,Math.PI*2,0,Math.PI/2),mat([0x2d3a2d,0x444444,0x3a3020,0x5a5a48][Math.floor(Math.random()*4)]));helm.position.y=1.63;g.add(helm);
-    g.add(bm(.3,.04,.1,0x222222,0,1.61,-.2));
+    g.add(cy(.235,.2,.46,vest,0,1.2,0,1,.82));
+    const bp=M(boxGeo,0x4b4a38,0,1.15,.27);bp.scale.set(.4,.52,.2);g.add(bp);
+    for(const s of[-1,1])g.add(sp(.095,shirt,s*.3,1.4,0,1,.75,1));
   }
-  const side=new THREE.Group();side.add(bm(.14,.62,.14,col,-.34,1.08,0),bm(.14,.62,.14,col,.34,1.08,0),bm(.12,.12,.12,skin,-.34,.74,0),bm(.12,.12,.12,skin,.34,.74,0));
-  if(H)side.add(bm(.15,.07,.15,acc,-.34,.82,0),bm(.15,.07,.15,acc,.34,.82,0));
+  // ---- sar ----
+  const head=sp(.2,skin,0,1.62,0,1,1.07,1);g.add(head);
+  for(const s of[-1,1])g.add(sp(.042,skin,s*.2,1.6,0,.7,1,1));
+  g.add(sp(.036,H?0xd69a72:0xd0a47c,0,1.57,-.2,1,.9,1));
+  const fm=new THREE.Mesh(new THREE.SphereGeometry(.203,18,14,-Math.PI/2-.62,1.24,Math.PI/2-.5,1.05),new THREE.MeshLambertMaterial({map:faceTexture(),transparent:true}));
+  fm.position.set(0,1.62,0);fm.scale.set(1,1.07,1);g.add(fm);
+  if(H){ // baal
+    const hair=new THREE.Mesh(new THREE.SphereGeometry(.222,16,10,0,Math.PI*2,0,Math.PI*.56),stdM(0x4a2e20,.6));hair.position.set(0,1.645,.012);hair.scale.set(1,1.05,1.02);g.add(hair);
+    g.add(sp(.2,0x4a2e20,0,1.62,.1,1,.95,.75),sp(.16,0x4a2e20,0,1.73,-.1,1.05,.38,.6));
+  }else{
+    const helm=new THREE.Mesh(new THREE.SphereGeometry(.236,16,10,0,Math.PI*2,0,Math.PI*.5),stdM([0x2d3a2d,0x444444,0x3a3020,0x5a5a48][Math.floor(Math.random()*4)],.7,.1));helm.position.y=1.65;g.add(helm);
+    const br=M(boxGeo,0x222222,0,1.66,-.2);br.scale.set(.3,.04,.1);g.add(br);
+  }
+  // ---- latakte haath (gun na ho) ----
+  const side=new THREE.Group();
+  for(const s of[-1,1]){const x=s*.31;
+    side.add(sp(.075,shirt,s*.3,1.38,0),cy(.063,.055,.3,shirt,x,1.22,0),sp(.056,shirt,x,1.07,0),cy(.055,.048,.28,shirt,x,.92,0),cy(.062,.062,.07,H?acc:0x33382a,x,.79,0),sp(.055,skin,x,.725,0));}
   g.add(side);
+  // ---- gun pakadte haath (pitch ke saath ghoomte hain) ----
   const pivot=new THREE.Group();pivot.position.set(0,1.35,0);g.add(pivot);
-  pivot.add(bm(.13,.13,.5,col,.2,-.08,-.25),bm(.13,.13,.45,col,-.05,-.1,-.28),bm(.11,.11,.11,skin,.2,-.08,-.52),bm(.11,.11,.11,skin,-.05,-.1,-.52));
-  if(H)pivot.add(bm(.145,.145,.07,acc,.2,-.08,-.45),bm(.145,.145,.07,acc,-.05,-.1,-.45));
+  const arm=(x,y,z,len)=>{const a=cy(.058,.05,len,shirt,x,y,z);a.rotation.x=Math.PI/2;pivot.add(a);
+    const cf=cy(.063,.063,.07,H?acc:0x33382a,x,y,z-len/2+.05);cf.rotation.x=Math.PI/2;pivot.add(cf);pivot.add(sp(.056,skin,x,y,z-len/2-.03));};
+  arm(.2,-.08,-.25,.5);arm(-.05,-.1,-.28,.45);
+  pivot.add(sp(.07,shirt,.26,-.03,-.02));
   g.traverse(o=>{if(o.isMesh)o.castShadow=true;});
   const chute=makeChute([0xe0502a,0x2a7ae0,0xe0c02a,0x2ae07a,0xd0d0d0,0x8a2ae0][Math.floor(Math.random()*6)]);chute.visible=false;g.add(chute);
   scene.add(g);
@@ -1179,7 +1260,7 @@ function applyDamage(a,amt,by,head,zoneDmg){
   else if(by){a.aggro=by;a.aggroT=6;}
   if(a.hp<=0)killActor(a,by,zoneDmg,false);
 }
-function feed(txt,me){const d=document.createElement('div');d.textContent=txt;if(me)d.className='me';$('feed').appendChild(d);setTimeout(()=>d.remove(),6000);while($('feed').children.length>6)$('feed').firstChild.remove();}
+function feed(txt,me){const d=document.createElement('div');d.innerHTML=IC(escH(txt));if(me)d.className='me';$('feed').appendChild(d);setTimeout(()=>d.remove(),6000);while($('feed').children.length>6)$('feed').firstChild.remove();}
 function killActor(a,by,zoneDmg,fromNet){
   if(!a.alive)return;
   a.alive=false;a.hp=0;a.deadBy=by?by.id:null;
@@ -1238,7 +1319,7 @@ function updateCrates(dt){
   }
 }
 function checkWin(){if(player.alive&&state==='play'&&actors.filter(x=>x.alive).length===1)gameOver(true,1);}
-function showMsg(t){const m=$('msg');m.textContent=t;m.style.opacity=1;clearTimeout(showMsg.t);showMsg.t=setTimeout(()=>m.style.opacity=0,2200);}
+function showMsg(t){const m=$('msg');m.innerHTML=IC(escH(t));m.style.opacity=1;clearTimeout(showMsg.t);showMsg.t=setTimeout(()=>m.style.opacity=0,2200);}
 
 /* damage arrows */
 let indN=0;const inds={};
@@ -1562,8 +1643,8 @@ bmc.addEventListener('contextmenu',e=>{e.preventDefault();wp=null;wpBeam.visible
 const deathMarks=[];
 function mapIcon(g,x,y,emoji,bg,r){ // gol badge + emoji
   g.beginPath();g.arc(x,y,r,0,6.283);g.fillStyle=bg;g.fill();g.lineWidth=1.5;g.strokeStyle='#fff';g.stroke();
-  g.font=`${Math.round(r*1.5)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillStyle='#fff';g.fillText(emoji,x,y+r*.08);
-  g.textBaseline='alphabetic';
+  const im=iconImg(EMO[emoji]||'user'),s=r*1.25;
+  if(im.complete&&im.naturalWidth)g.drawImage(im,x-s/2,y-s/2,s,s);
 }
 function planeShape(g,x,y,yaw,s){ // jahaz ka nishaan (raaste ki disha mein)
   g.save();g.translate(x,y);g.rotate(-yaw);g.fillStyle='#fff';g.strokeStyle='#123';g.lineWidth=1.5;
@@ -2144,6 +2225,11 @@ if(QS.has('auto')){
     const tp=(QS.get('tp')||'').split(',').map(Number);
     if(tp.length>=2&&!isNaN(tp[0])){player.pos.set(tp[0],tp[3]||0,tp[1]);player.viewY=tp[3]||0;player.yaw=(tp[2]||0)*Math.PI/180;player.pitch=(tp[4]||0)*Math.PI/180;}
     if(QS.has('fpp'))player.fpp=true;
+    if(QS.has('chartest')){ // saamne ek avatar khada karo (chehra dekhne ke liye)
+      player.ph=3;player.ch.hid=false;player.ch.group.visible=true;player.landed=true;
+      const fx=-Math.sin(player.yaw),fz=-Math.cos(player.yaw),r=makeRemote({id:99,name:'Test',slot:parseInt(QS.get('chartest'))||0});
+      r.ph=3;r.init=true;r.pos.set(player.pos.x+fx*2.6+.8,0,player.pos.z+fz*2.6);r.tx=r.pos.x;r.ty=0;r.tz=r.pos.z;r.yaw=r.tyaw=player.yaw+Math.PI+.35;r.wkey='rifle';
+    }
     if(QS.has('climbx')){ // bahar ki seedhi ka test (1 manzil)
       const B=buildings.find(b=>b.ex),e=B.ex,top=B.st.top;
       player.pos.set(e.sx,0,e.z0-e.dir*1.2);player.viewY=0;
