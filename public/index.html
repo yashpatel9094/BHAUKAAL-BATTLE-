@@ -150,7 +150,7 @@ input{font-size:16px;padding:8px 12px;border-radius:6px;border:1px solid #fff4;b
       <input id="code" maxlength="8" placeholder="Room CODE" style="width:120px;text-transform:uppercase">
       <button id="btnJoin" class="b2">JOIN</button>
     </div>
-    <p style="opacity:.7;font-size:12px;margin:6px 0 0;max-width:480px">Room banao, code dost ko do. Kam se kam 4 players hote hi 30 sec ka timer chalta hai, phir match shuru (max 30). Baaki jagah bots.</p>
+    <p style="opacity:.7;font-size:12px;margin:6px 0 0;max-width:480px">Room banao, code dost ko do. Kam se kam 4 players hote hi 30 sec ka timer chalta hai, phir match shuru (max 30). Room mein sirf wahi khelenge jo code daalke judenge, bots nahi.</p>
   </div>
   <div><button class="b3" onclick="exitApp()">⏻ EXIT</button></div>
   <p id="menuErr" style="color:#ff7a7a;margin-top:6px;font-size:14px"></p>
@@ -162,10 +162,16 @@ input{font-size:16px;padding:8px 12px;border-radius:6px;border:1px solid #fff4;b
   <div id="plist"></div>
   <div><button class="b3" onclick="leaveLobby()">⏻ LOBBY SE BAHAR</button></div>
   <p id="lobWait" style="opacity:.8;margin-top:8px">Host ke match shuru karne ka wait...</p>
-  <p style="opacity:.6;font-size:13px;margin-top:10px;max-width:520px">Khali jagah bots se bhari jaayengi (minimum 16 total). Room CODE dost ko batao.</p>
+  <p style="opacity:.6;font-size:13px;margin-top:10px;max-width:520px">Sirf code daalke judne wale players khelenge, koi bot nahi. Room CODE dost ko batao.</p>
 </div>
 <div id="pause" class="screen"><h1 style="font-size:40px" id="pauseT">PAUSE</h1><h2 id="pauseS">Wapas aane ke liye click karo</h2><button id="resume">JAARI RAKHO</button><button class="b3" onclick="quitGame()">⏻ BAHAR NIKLO (Exit)</button></div>
-<div id="end" class="screen"><h1 id="endT"></h1><h2 id="endS"></h2><button onclick="location.reload()">DOBARA KHELO</button></div>
+<div id="end" class="screen"><h1 id="endT"></h1><h2 id="endK" style="color:#ffcf6a"></h2><h2 id="endS"></h2><div><button id="specBtn" class="b2" style="display:none" onclick="startSpectate()">👁 DEKHO (Spectate) — aage ka game</button><button onclick="netLeave();location.reload()">DOBARA KHELO / MENU</button></div></div>
+<div id="spec" style="display:none;position:fixed;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.65);color:#fff;padding:10px 16px;border-radius:12px;z-index:40;font:600 17px 'Segoe UI',sans-serif;text-align:center">
+  👁 Dekh rahe ho: <b id="specName" style="color:#ffb300"></b> <span id="specInfo" style="opacity:.8;font-size:14px"></span><br>
+  <button onclick="specStep(-1)" style="padding:6px 14px;margin:6px 4px 0">◀ Pichla</button><button onclick="specStep(1)" style="padding:6px 14px;margin:6px 4px 0">Agla ▶</button><button onclick="stopSpectate()" style="padding:6px 14px;margin:6px 4px 0;background:#c33;color:#fff">MENU</button>
+  <div style="opacity:.6;font-size:12px;margin-top:4px">← → ya A / D se badlo</div>
+</div>
+<div id="ztint" style="position:fixed;inset:0;pointer-events:none;z-index:8;opacity:0;transition:opacity .35s;background:radial-gradient(ellipse at center,rgba(40,110,255,.28) 0%,rgba(20,70,255,.55) 100%)"></div>
 
 <script src="three.min.js"></script>
 <script>
@@ -188,8 +194,8 @@ const WP={
  smg    :{name:'UZI SMG',dmg:15,rate:.075,mag:30,ammo:'light',spread:.028,range:90,auto:true,reload:1.7,rec:.5,len:.34,col:0x3a3a44,ideal:11,snd:1100,fov:60},
  rifle  :{name:'M416',dmg:26,rate:.095,mag:30,ammo:'heavy',spread:.014,range:240,auto:true,reload:2.1,rec:.8,len:.55,col:0x3d4a3a,ideal:26,snd:1500,fov:48},
  akm    :{name:'AKM',dmg:34,rate:.12,mag:30,ammo:'heavy',spread:.018,range:240,auto:true,reload:2.3,rec:1.2,len:.55,col:0x6b4a2b,ideal:24,snd:1700,fov:48},
- shotgun:{name:'S12K Shotgun',dmg:12,pellets:9,rate:.8,mag:6,ammo:'shell',spread:.055,range:45,auto:false,reload:2.4,rec:2.2,len:.6,col:0x4a3a2a,ideal:7,snd:1300,fov:60},
- sniper :{name:'Kar98k Sniper',dmg:85,rate:1.3,mag:5,ammo:'heavy',spread:.002,range:450,auto:false,reload:2.6,rec:3,len:.85,col:0x2f3b2f,ideal:55,snd:2000,fov:18,scope:true}
+ shotgun:{name:'S12K Shotgun',dmg:7,pellets:9,rate:.8,mag:6,ammo:'shell',spread:.055,range:45,auto:false,reload:2.4,rec:2.2,len:.6,col:0x4a3a2a,ideal:7,snd:1300,fov:60},
+ sniper :{name:'Kar98k Sniper',dmg:60,rate:1.3,mag:5,ammo:'heavy',spread:.002,range:450,auto:false,reload:2.6,rec:3,len:.85,col:0x2f3b2f,ideal:55,snd:2000,fov:18,scope:true}
 };
 const WEIGHTS=[['pistol',3],['smg',2],['shotgun',2],['rifle',2],['akm',1.5],['sniper',1]];
 function randWeapon(){let t=WEIGHTS.reduce((s,w)=>s+w[1],0)*rand();for(const w of WEIGHTS){if((t-=w[1])<=0)return w[0];}return 'pistol';}
@@ -832,25 +838,41 @@ function makeBike(col){
 }
 function spinBike(b,dist){const u=b.mesh.userData;if(!u.rw)return;u.rw.rotation.x-=dist/.41;u.fw.rotation.x-=dist/.41;}
 function makeChar(col,hero){
-  const g=new THREE.Group(),skin=hero?0xd9a77f:0xe0b48c,pants=hero?0x17171b:0x3b4331;g.rotation.order='YXZ';
-  if(hero)col=0x17171c; // avatar: kali t-shirt
-  const mkLeg=x=>{const l=new THREE.Group();l.position.set(x,.82,0);l.add(bm(.2,.8,.23,pants,0,-.41,0),bm(.22,.18,.3,hero?0xd8cfb8:0x2a2018,0,-.74,-.03));return l;};
+  const g=new THREE.Group();g.rotation.order='YXZ';
+  const H=!!hero,acc=(typeof hero==='number')?hero:0xe0961e; // avatar: olive vest + narangi kandhe/cuff
+  const skin=H?0xe3ad84:0xe0b48c,pants=H?0x46552d:0x3b4331;
+  if(H)col=0x3d5230; // hero: aasteen hari
+  const mkLeg=x=>{const l=new THREE.Group();l.position.set(x,.82,0);
+    l.add(bm(.2,.8,.23,pants,0,-.41,0));
+    if(H)l.add(bm(.23,.2,.32,0x4a3322,0,-.72,-.04),bm(.25,.08,.34,0x38281a,0,-.83,-.04),bm(.2,.05,.25,0x5a4330,0,-.61,-.02),bm(.05,.17,.17,0x56662f,x<0?-.125:.125,-.3,0),bm(.055,.04,.1,0x3a4421,x<0?-.15:.15,-.26,0)); // boot + cargo pocket
+    else l.add(bm(.22,.18,.3,0x2a2018,0,-.74,-.03));
+    return l;};
   const legL=mkLeg(-.12),legR=mkLeg(.12);g.add(legL,legR);
-  if(hero)g.add(bm(.52,.62,.3,col,0,1.13,0),bm(.5,.07,.31,0x6b4a2a,0,.86,0),bm(.07,.06,.02,0xc9a24a,0,.86,-.16));
-  else g.add(bm(.52,.62,.3,col,0,1.13,0),bm(.55,.42,.35,0x3a4036,0,1.2,0),bm(.4,.52,.2,0x4b4a38,0,1.15,.26),bm(.48,.06,.3,0x2a2a2a,0,.84,0));
+  if(H){
+    g.add(bm(.52,.62,.3,col,0,1.13,0));                       // undershirt
+    g.add(bm(.58,.5,.35,0x56662f,0,1.18,0),bm(.6,.07,.36,0x3f4c25,0,.95,0)); // vest + niche patti
+    g.add(bm(.15,.13,.05,0x4a5828,-.14,1.1,-.19),bm(.15,.13,.05,0x4a5828,.14,1.1,-.19),bm(.15,.1,.05,0x4a5828,-.14,1.27,-.19),bm(.15,.1,.05,0x4a5828,.14,1.27,-.19)); // pockets
+    g.add(bm(.04,.46,.03,0x6b5a3a,0,1.17,-.19)); // zip
+    g.add(bm(.46,.08,.4,acc,0,1.47,0)); // collar
+    g.add(bm(.5,.1,.04,0x44532b,0,1.17,.19),bm(.5,.06,.05,0x2f3a1c,0,.9,.2)); // peeche
+    g.add(bm(.2,.1,.26,acc,-.37,1.43,0),bm(.2,.1,.26,acc,.37,1.43,0)); // kandhe ke pad
+    g.add(bm(.5,.05,.31,0x24281a,0,.84,0));
+  }else g.add(bm(.52,.62,.3,col,0,1.13,0),bm(.55,.42,.35,0x3a4036,0,1.2,0),bm(.4,.52,.2,0x4b4a38,0,1.15,.26),bm(.48,.06,.3,0x2a2a2a,0,.84,0));
   const head=new THREE.Mesh(new THREE.SphereGeometry(.2,12,10),mat(skin));head.position.y=1.6;g.add(head);
-  if(hero){ // bhura baal + moonchh
-    const hair=new THREE.Mesh(new THREE.SphereGeometry(.225,12,8,0,Math.PI*2,0,Math.PI/2),mat(0x4a2e1a));hair.position.y=1.63;g.add(hair);
-    g.add(bm(.17,.04,.05,0x3a2414,0,1.55,-.2),bm(.22,.26,.1,0x4a2e1a,0,1.6,.17));
+  if(H){ // baal + chehra (aankhein, muskaan)
+    const hair=new THREE.Mesh(new THREE.SphereGeometry(.235,12,8,0,Math.PI*2,0,Math.PI/2),mat(0x4a2e20));hair.position.y=1.64;g.add(hair);
+    g.add(bm(.4,.2,.14,0x4a2e20,0,1.62,.15),bm(.34,.05,.06,0x4a2e20,0,1.71,-.12));
+    g.add(bm(.045,.06,.02,0x1a1410,-.075,1.62,-.195),bm(.045,.06,.02,0x1a1410,.075,1.62,-.195),bm(.1,.025,.02,0x7a3b2a,0,1.54,-.19),bm(.07,.018,.02,0x3a2418,-.075,1.67,-.2),bm(.07,.018,.02,0x3a2418,.075,1.67,-.2));
   }else{
     const helm=new THREE.Mesh(new THREE.SphereGeometry(.235,12,8,0,Math.PI*2,0,Math.PI/2),mat([0x2d3a2d,0x444444,0x3a3020,0x5a5a48][Math.floor(Math.random()*4)]));helm.position.y=1.63;g.add(helm);
     g.add(bm(.3,.04,.1,0x222222,0,1.61,-.2));
   }
   const side=new THREE.Group();side.add(bm(.14,.62,.14,col,-.34,1.08,0),bm(.14,.62,.14,col,.34,1.08,0),bm(.12,.12,.12,skin,-.34,.74,0),bm(.12,.12,.12,skin,.34,.74,0));
-  if(hero)side.add(bm(.145,.04,.145,0xe0b020,-.34,.8,0),bm(.145,.04,.145,0xe0b020,.34,.8,0));
+  if(H)side.add(bm(.15,.07,.15,acc,-.34,.82,0),bm(.15,.07,.15,acc,.34,.82,0));
   g.add(side);
   const pivot=new THREE.Group();pivot.position.set(0,1.35,0);g.add(pivot);
   pivot.add(bm(.13,.13,.5,col,.2,-.08,-.25),bm(.13,.13,.45,col,-.05,-.1,-.28),bm(.11,.11,.11,skin,.2,-.08,-.52),bm(.11,.11,.11,skin,-.05,-.1,-.52));
+  if(H)pivot.add(bm(.145,.145,.07,acc,.2,-.08,-.45),bm(.145,.145,.07,acc,-.05,-.1,-.45));
   g.traverse(o=>{if(o.isMesh)o.castShadow=true;});
   const chute=makeChute([0xe0502a,0x2a7ae0,0xe0c02a,0x2ae07a,0xd0d0d0,0x8a2ae0][Math.floor(Math.random()*6)]);chute.visible=false;g.add(chute);
   scene.add(g);
@@ -971,7 +993,7 @@ function makeBot(k){
   actors.push(b);byId[b.id]=b;bots.push(b);return b;
 }
 function makeRemote(p){
-  const ch=makeChar([0xd04040,0x40a0d0,0xd0a040,0x40d080,0xa050d0][Math.floor(Math.random()*5)]);
+  const ch=makeChar(0,[0xe0961e,0x3aa0e0,0xd04040,0x40c878,0xb060e0,0xe0d040][(p.slot|0)%6]); // wahi avatar, kandhe ka rang alag
   ch.group.add(nameSprite(p.name));ch.group.visible=false;ch.hid=true;
   const a={id:p.id,name:p.name,pos:new V3(plane.x,plane.y,plane.z),hp:100,armor:0,alive:true,height:1.75,yaw:0,ch,isRemote:true,wkey:null,
     tx:plane.x,ty:plane.y,tz:plane.z,tyaw:0,tpitch:0,crouch:false,stance:0,ph:0,bikeRef:null,byaw:0,runT:0};
@@ -1096,7 +1118,7 @@ function shoot(shooter,o,dir,wpn,spread,dmgMul,tracerStart,wkey){
   const pellets=wpn.pellets||1;let lastEnd=null;
   for(let p=0;p<pellets;p++){
     _d.set(dir.x+rnd(-1,1)*spread,dir.y+rnd(-1,1)*spread,dir.z+rnd(-1,1)*spread).normalize();
-    let best=wpn.range,hitA=null,head=false;
+    let best=wpn.range,hitA=null,head=false,zm=1; // zm: jagah ke hisab se damage (sir 1.6x, dhad 1x, taang .6x)
     best=Math.min(best,rayWorld(o,_d,best));
     for(const a of actors){
       if(a===shooter||!a.alive||a.ph<3)continue;
@@ -1104,20 +1126,20 @@ function shoot(shooter,o,dir,wpn,spread,dmgMul,tracerStart,wkey){
       let t;
       if(a.stance===2&&!a.bikeRef){ // let hua (prone): sir aage, paer peeche
         const fx=-Math.sin(a.yaw)*.8,fz=-Math.cos(a.yaw)*.8;
-        t=raySphere(o.x,o.y,o.z,_d.x,_d.y,_d.z,a.pos.x+fx,py+.3,a.pos.z+fz,.2);if(t<best){best=t;hitA=a;head=true;}
-        t=raySphere(o.x,o.y,o.z,_d.x,_d.y,_d.z,a.pos.x,py+.3,a.pos.z,.36);if(t<best){best=t;hitA=a;head=false;}
-        t=raySphere(o.x,o.y,o.z,_d.x,_d.y,_d.z,a.pos.x-fx,py+.25,a.pos.z-fz,.3);if(t<best){best=t;hitA=a;head=false;}
+        t=raySphere(o.x,o.y,o.z,_d.x,_d.y,_d.z,a.pos.x+fx,py+.3,a.pos.z+fz,.2);if(t<best){best=t;hitA=a;head=true;zm=1.6;}
+        t=raySphere(o.x,o.y,o.z,_d.x,_d.y,_d.z,a.pos.x,py+.3,a.pos.z,.36);if(t<best){best=t;hitA=a;head=false;zm=1;}
+        t=raySphere(o.x,o.y,o.z,_d.x,_d.y,_d.z,a.pos.x-fx,py+.25,a.pos.z-fz,.3);if(t<best){best=t;hitA=a;head=false;zm=.6;}
         continue;
       }
       t=raySphere(o.x,o.y,o.z,_d.x,_d.y,_d.z,a.pos.x,py+h-.18,a.pos.z,.22);
-      if(t<best){best=t;hitA=a;head=true;}
+      if(t<best){best=t;hitA=a;head=true;zm=1.6;}
       t=raySphere(o.x,o.y,o.z,_d.x,_d.y,_d.z,a.pos.x,py+h*.6,a.pos.z,.4);
-      if(t<best){best=t;hitA=a;head=false;}
+      if(t<best){best=t;hitA=a;head=false;zm=1;}
       t=raySphere(o.x,o.y,o.z,_d.x,_d.y,_d.z,a.pos.x,py+h*.25,a.pos.z,.33);
-      if(t<best){best=t;hitA=a;head=false;}
+      if(t<best){best=t;hitA=a;head=false;zm=.6;}
     }
     const end=new V3(o.x+_d.x*best,o.y+_d.y*best,o.z+_d.z*best);
-    if(hitA){damageActor(hitA,wpn.dmg*(head?2:1)*dmgMul,shooter,head);burst(end,0xb01010,5,2);}
+    if(hitA){damageActor(hitA,Math.min(88,wpn.dmg*zm*dmgMul),shooter,head);/* ek goli se (poori HP wale ko) kabhi nahi marta */burst(end,0xb01010,5,2);}
     else if(best<wpn.range-.01)burst(end,0xd8cfa8,4,2.5);
     const ts=tracerStart||o;tracer(ts,end);lastEnd=end;
     if(net.on&&(shooter.isPlayer||(shooter.isBot&&net.isHost)))send({t:'shot',sid:shooter.id,o:[r2(ts.x),r2(ts.y),r2(ts.z)],e:[r2(end.x),r2(end.y),r2(end.z)],w:wkey});
@@ -1160,6 +1182,7 @@ function feed(txt,me){const d=document.createElement('div');d.textContent=txt;if
 function killActor(a,by,zoneDmg,fromNet){
   if(!a.alive)return;
   a.alive=false;a.hp=0;a.deadBy=by?by.id:null;
+  if(a.isPlayer){const wk=by&&by.wkey&&WP[by.wkey]?WP[by.wkey].name:null;a.killer=zoneDmg?{name:null,txt:'🔵 Zone (blue area) ne maara — zone ke andar rehna tha!'}:(by&&by!==a)?{name:by.name,id:by.id,txt:'🔫 Tumhe maara: '+by.name+(wk?'  ('+wk+')':'')}:{name:null,txt:'Tum khud khatam ho gaye'};}
   if(!a.isPlayer)makeDeathCrate(a); // PUBG jaisa: body gayab, uski jagah peti + dhuan
   deathMarks.push({x:a.pos.x,z:a.pos.z,t:performance.now()/1000});
   feed(zoneDmg?`${a.name} zone mein mara gaya`:(by&&by!==a)?`${by.name}  ➜  ${a.name}`:`${a.name} khatam ho gaya`,by===player);
@@ -1413,7 +1436,7 @@ function lobbyUpdate(s){
   if(lobStarted)return;
   const esc=t=>String(t).replace(/[<>&]/g,'');
   $('plist').innerHTML=s.players.map(p=>`<div>${p.id===s.hostId?'👑 ':'🎮 '}<b>${esc(p.name)}</b>${p.id===net.id?' (tum)':''}</div>`).join('');
-  $('lobInfo').innerHTML=`Room CODE: <b style="color:#ffb300;font-size:28px;letter-spacing:3px">${s.code}</b><br>Players: ${s.players.length} (min ${s.min}, max ${s.max}) — baaki jagah bots se bharegi`;
+  $('lobInfo').innerHTML=`Room CODE: <b style="color:#ffb300;font-size:28px;letter-spacing:3px">${s.code}</b><br>Players: ${s.players.length} (min ${s.min}, max ${s.max}) — bots nahi honge`;
   const secs=s.startAt?Math.max(0,Math.ceil((s.startAt-s.now)/1000)):0;
   $('lobWait').style.display='block';
   $('lobWait').textContent=s.started?'Match shuru ho raha hai...':s.startAt?`⏱ Match ${secs} sec mein shuru hoga — jo bhi code daalega judta jayega`:`⏳ Kam se kam ${s.min} players chahiye (${s.players.length}/${s.min}) — dost ko code do`;
@@ -1921,6 +1944,7 @@ function updateHUD(){
     pr.style.display='block';pr.textContent=di<=db?`E / ENTER – ${nearItem.name} uthao`:'E / ENTER – Bike chalao 🏍';
   }else pr.style.display='none';
   $('dmg').style.opacity=dmgFlash;
+  $('ztint').style.opacity=(player.alive&&player.ph>=0&&outsideZone(player))?(.75+Math.sin(performance.now()/300)*.2):0; // zone ke bahar: poori screen neeli
   drawMinimap();
 }
 
@@ -1945,7 +1969,39 @@ function gameOver(win,rank){
   $('endT').textContent=win?'WINNER WINNER CHICKEN DINNER! 🍗':'Aap haar gaye 💀';
   $('endT').style.color=win?'#ffb300':'#ff5a5a';
   $('endS').textContent=`Rank #${rank} / ${TOTAL}   |   Kills: ${player.kills}   |   Time: ${Math.floor(matchT/60)}m ${Math.floor(matchT%60)}s`;
+  $('endK').textContent=(!win&&player.killer)?player.killer.txt:'';
+  $('specBtn').style.display=(!win&&actors.some(a=>a.alive&&a!==player))?'inline-block':'none';
   setTimeout(()=>{$('end').style.display='flex';},win?500:1400);
+}
+/* ---- spectate: mar jaane ke baad aage ka game dekho ---- */
+const spec={on:false,t:null};
+function specList(){return actors.filter(a=>a.alive&&a!==player&&!(a.ch&&a.ch.hid&&a.ph===0&&false));}
+function startSpectate(){
+  const l=specList();if(!l.length){return;}
+  const k=player.killer&&byId[player.killer.id];
+  spec.t=(k&&k.alive)?k:l[0];spec.on=true;
+  $('end').style.display='none';$('spec').style.display='block';camera.rotation.z=0;camera.fov=70;camera.updateProjectionMatrix();
+  $('end').dataset.spec='1';
+}
+function stopSpectate(){netLeave();location.reload();}
+function specStep(d){
+  const l=specList();if(!l.length)return;
+  let i=l.indexOf(spec.t);i=i<0?0:(i+d+l.length)%l.length;spec.t=l[i];
+}
+addEventListener('keydown',e=>{
+  if(!spec.on)return;
+  if(e.code==='ArrowLeft'||e.code==='KeyA')specStep(-1);
+  else if(e.code==='ArrowRight'||e.code==='KeyD')specStep(1);
+});
+const _sp=new V3();
+function updateSpectate(dt){
+  if(!spec.t||!spec.t.alive){const l=specList();if(!l.length){$('specName').textContent='koi nahi bacha';$('specInfo').textContent='— match khatam';return;}spec.t=l[0];}
+  const t=spec.t;
+  $('specName').textContent=t.name;$('specInfo').textContent=`(${t.isBot?'bot':'player'}, HP ${Math.max(0,Math.round(t.hp))}) — ${specList().length} bache`;
+  const yaw=t.yaw||0,py=(t.pos.y||0)+(t.ph<3?2.5:2.4);
+  _sp.set(t.pos.x+Math.sin(yaw)*5.5,py+.6,t.pos.z+Math.cos(yaw)*5.5);
+  const k=Math.min(1,dt*5);camera.position.lerp(_sp,k);
+  camera.lookAt(t.pos.x,(t.pos.y||0)+1.4,t.pos.z);
 }
 function loop(now){
   requestAnimationFrame(loop);
@@ -1966,7 +2022,8 @@ function loop(now){
   }else if(state==='over'){
     updateFx(dt);updateCrates(dt);
     for(const a of actors){if(a.isPlayer)continue;if(a.isRemote)updateRemote(a,dt);else if(a.isProxy)updateProxy(a,dt);else if(a.isBot)updateBot(a,dt,gameTime);}
-    if(!player.alive){camera.position.y=Math.max(.3,camera.position.y-dt*2);camera.rotation.z=Math.min(1.2,camera.rotation.z+dt);}
+    if(spec.on)updateSpectate(dt);
+    else if(!player.alive){camera.position.y=Math.max(.3,camera.position.y-dt*2);camera.rotation.z=Math.min(1.2,camera.rotation.z+dt);}
     netTick(dt);
   }else{
     camera.rotation.y+=dt*.05;
@@ -1989,10 +2046,10 @@ function startMatch(seed,plist){
   rand=mulberry32(seed^0x5bd1e995);
   setupPlane();
   plist=[...plist].sort((a,b)=>a.slot-b.slot);
-  TOTAL=Math.max(16,plist.length);const nBots=TOTAL-plist.length;
+  TOTAL=net.on?plist.length:Math.max(16,plist.length);const nBots=net.on?0:TOTAL-plist.length; // multiplayer room: sirf asli players, bots nahi
   // 3) players
   for(const p of plist){
-    if(p.id===net.id){player.ch=makeChar(0xe08a1e,true);player.ch.group.visible=false;player.ch.hid=true;player.name=p.name;player.id=p.id;player.ph=0;player.stance=0;
+    if(p.id===net.id){player.ch=makeChar(0,true);player.ch.group.visible=false;player.ch.hid=true;player.name=p.name;player.id=p.id;player.ph=0;player.stance=0;
       player.pos.set(plane.x,plane.y,plane.z);player.viewY=plane.y;player.yaw=plane.yaw;player.pitch=-.15;byId[p.id]=player;actors.push(player);}
     else makeRemote(p);
   }
@@ -2005,7 +2062,7 @@ function startMatch(seed,plist){
   buildViewmodel();
   document.addEventListener('contextmenu',e=>e.preventDefault());
   state='play';$('hud').style.display='block';
-  $('pauseT').textContent='MATCH TAIYAAR!';$('pauseS').textContent=net.on?`${plist.length} players + ${freeSlots.length} bots — click karke shuru karo`:'Click karke shuru karo';$('pause').style.display='flex';
+  $('pauseT').textContent='MATCH TAIYAAR!';$('pauseS').textContent=net.on?`${plist.length} players — click karke shuru karo`:'Click karke shuru karo';$('pause').style.display='flex';
   lock();showMsg('✈ Jahaz mein ho! F = kudo  |  M = map (raasta + waypoint)');
 }
 function initAudio(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();}
